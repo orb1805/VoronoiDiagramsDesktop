@@ -188,6 +188,9 @@ class AppController : Controller() {
             var length2: Int
             var polygon: Polygon
             var count: Int
+            var setOfIndexes: Set<Int>
+            var a: Int
+            var c: Int
             val inters = mutableListOf<Intersection>()
             for (i in intersections) {
                 for (j in i.value) {
@@ -211,17 +214,26 @@ class AppController : Controller() {
                     deletionController.add(false)
             val setOfDeleted = mutableSetOf<Int>()
             for (i in inters.indices) {
+                println("i: ${i + 1}")
                 polygon = Polygon()
-                val a = min(inters[i].indexOfVertex, inters[i].indexesOfEdge[0])
-                val c = max(inters[i].indexOfVertex, inters[i].indexesOfEdge[0])
-                length1 = c - a//abs(inters[i].indexOfVertex - inters[i].indexesOfEdge[0])
+                if (inters[i].indexOfVertex < inters[i].indexesOfEdge[0]) {
+                    a = inters[i].indexOfVertex//min(inters[i].indexOfVertex, inters[i].indexesOfEdge[0])
+                    c = inters[i].indexesOfEdge[0]//max(inters[i].indexOfVertex, inters[i].indexesOfEdge[0])
+                    length1 = c - a
+                    setOfIndexes = (a..c).toSet()
+                } else {
+                    length1 = if (inters[i].indexOfVertex == points.lastIndex)
+                        1
+                    else
+                        points.lastIndex - inters[i].indexOfVertex
+                    length1 += inters[i].indexesOfEdge[0]
+                    setOfIndexes = inters[i].indexOfVertex .. points.lastIndex union 0 .. inters[i].indexesOfEdge[0]
+                }
                 count = 0
                 for (j in setOfDeleted)
-                    if (j in a..c)
+                    if (j in setOfIndexes)
                         count++
                 length1 -= count
-                /*if (inters[i].indexOfVertex > inters[i].indexesOfEdge[0])
-                    length1--*/
                 length2 = points.size - setOfDeleted.size - length1 - 1
                 println("len1: $length1  len2: $length2")
                 if (length1 == length2) {
@@ -233,24 +245,29 @@ class AppController : Controller() {
                 if (length1 < length2) {
                     println("I choose len1")
                     if (inters[i].indexOfVertex > inters[i].indexesOfEdge[0]) {
-                        //from indexOfVertex downTo indexesOfEdge[0]
                         count = 0
-                        polygon.reverseAddNode(points[inters[i].indexOfVertex])
+                        polygon.addNode(points[inters[i].indexOfVertex])
                         if (types[inters[i].indexOfVertex] == Type.WIDE) {
                             if (deletionController[inters[i].indexOfVertex])
                                 deletionController[inters[i].indexOfVertex] = false
                             else
                                 setOfDeleted.add(i)
                         }
-                        for (j in inters[i].indexOfVertex - 1 downTo inters[i].indexesOfEdge[0]) {
+                        for (j in inters[i].indexOfVertex + 1 .. points.lastIndex) {
                             if (!setOfDeleted.contains(j)) {
-                                polygon.reverseAddNode(points[j])
-                                //mainPolygon.removeNode(points[j])
+                                polygon.addNode(points[j])
                                 setOfDeleted.add(j)
                                 count++
                             }
                         }
-                        polygon.reverseAddNode(inters[i].pointOfEdge)
+                        for (j in 0 .. inters[i].indexesOfEdge[0]) {
+                            if (!setOfDeleted.contains(j)) {
+                                polygon.addNode(points[j])
+                                setOfDeleted.add(j)
+                                count++
+                            }
+                        }
+                        polygon.addNode(inters[i].pointOfEdge)
                         points[setOfDeleted.last()] = inters[i].pointOfEdge
                         setOfDeleted.remove(setOfDeleted.last())
                     } else {
@@ -266,7 +283,6 @@ class AppController : Controller() {
                         for (j in inters[i].indexOfVertex + 1..inters[i].indexesOfEdge[0]) {
                             if (!setOfDeleted.contains(j)) {
                                 polygon.addNode(points[j])
-                                //mainPolygon.removeNode(points[j])
                                 setOfDeleted.add(j)
                                 count++
                             }
@@ -290,7 +306,6 @@ class AppController : Controller() {
                         for (j in inters[i].indexOfVertex - 1 downTo inters[i].indexesOfEdge[1]) {
                             if (!setOfDeleted.contains(j)) {
                                 polygon.reverseAddNode(points[j])
-                                //mainPolygon.removeNode(points[j])
                                 setOfDeleted.add(j)
                                 count++
                             }
@@ -300,7 +315,7 @@ class AppController : Controller() {
                         setOfDeleted.remove(setOfDeleted.last())
                     } else {
                         //from indexOfVertex to indexesOfEdge[1]
-                        count = 0
+                        /*count = 0
                         polygon.addNode(points[inters[i].indexOfVertex])
                         if (types[inters[i].indexOfVertex] == Type.WIDE) {
                             if (deletionController[inters[i].indexOfVertex])
@@ -318,78 +333,45 @@ class AppController : Controller() {
                         }
                         polygon.addNode(inters[i].pointOfEdge)
                         points[setOfDeleted.last()] = inters[i].pointOfEdge
+                        setOfDeleted.remove(setOfDeleted.last())*/
+                        count = 0
+                        polygon.reverseAddNode(points[inters[i].indexOfVertex])
+                        if (types[inters[i].indexOfVertex] == Type.WIDE) {
+                            if (deletionController[inters[i].indexOfVertex])
+                                deletionController[inters[i].indexOfVertex] = false
+                            else
+                                setOfDeleted.add(i)
+                        }
+                        for (j in inters[i].indexOfVertex - 1 downTo 0) {
+                            if (!setOfDeleted.contains(j)) {
+                                polygon.reverseAddNode(points[j])
+                                //mainPolygon.removeNode(points[j])
+                                setOfDeleted.add(j)
+                                count++
+                            }
+                        }
+                        for (j in points.lastIndex downTo inters[i].indexesOfEdge[1]) {
+                            if (!setOfDeleted.contains(j)) {
+                                polygon.reverseAddNode(points[j])
+                                //mainPolygon.removeNode(points[j])
+                                setOfDeleted.add(j)
+                                count++
+                            }
+                        }
+                        polygon.reverseAddNode(inters[i].pointOfEdge)
+                        points[setOfDeleted.last()] = inters[i].pointOfEdge
                         setOfDeleted.remove(setOfDeleted.last())
                     }
                 }
                 println(setOfDeleted)
                 trapezoids.add(polygon)
             }
-            /*for (i in inters.indices) {
-                polygon = Polygon()
-                if (points[if (inters[i].indexOfVertex + 1 != points.size) inters[i].indexOfVertex + 1; else 0].y > points[inters[i].indexOfVertex].y &&
-                    points[if (inters[i].indexOfVertex - 1 != -1) inters[i].indexOfVertex - 1; else points.lastIndex].y > points[inters[i].indexOfVertex].y) {
-
-                }
-                if (points[if (inters[i].indexOfVertex + 1 != points.size) inters[i].indexOfVertex + 1; else 0].y > points[inters[i].indexOfVertex].y) {
-                    val maxInd = if (points[inters[i].indexesOfEdge[0]].y > points[inters[i].indexesOfEdge[1]].y)
-                        inters[i].indexesOfEdge[0]
-                    else
-                        inters[i].indexesOfEdge[1]
-                    if (inters[i].indexOfVertex < maxInd) {
-                        polygon.addNode(points[inters[i].indexOfVertex])
-                        for (j in inters[i].indexOfVertex + 1..maxInd) {
-                            polygon.addNode(points[j])
-                            setOfDeleted.add(j)
-                        }
-                        polygon.addNode(inters[i].pointOfEdge)
-                        points[setOfDeleted.last()] = inters[i].pointOfEdge
-                        setOfDeleted.remove(setOfDeleted.last())
-                    } else {
-                        polygon.addNode(points[inters[i].indexOfVertex])
-                        for (j in inters[i].indexOfVertex + 1..points.lastIndex) {
-                            polygon.addNode(points[j])
-                            setOfDeleted.add(j)
-                        }
-                        for (j in 0..maxInd) {
-                            polygon.addNode(points[j])
-                            setOfDeleted.add(j)
-                        }
-                        polygon.addNode(inters[i].pointOfEdge)
-                        points[setOfDeleted.last()] = inters[i].pointOfEdge
-                        setOfDeleted.remove(setOfDeleted.last())
-                    }
-                } else {
-                    val minInd = if (points[inters[i].indexesOfEdge[0]].y > points[inters[i].indexesOfEdge[1]].y)
-                        inters[i].indexesOfEdge[0]
-                    else
-                        inters[i].indexesOfEdge[1]
-                    if (inters[i].indexOfVertex > minInd) {
-                        polygon.reverseAddNode(points[inters[i].indexOfVertex])
-                        for (j in inters[i].indexOfVertex - 1 downTo minInd) {
-                            polygon.reverseAddNode(points[j])
-                            setOfDeleted.add(j)
-                        }
-                        polygon.reverseAddNode(inters[i].pointOfEdge)
-                        points[setOfDeleted.last()] = inters[i].pointOfEdge
-                        setOfDeleted.remove(setOfDeleted.last())
-                    } else {
-                        polygon.reverseAddNode(points[inters[i].indexOfVertex])
-                        for (j in inters[i].indexOfVertex - 1 downTo 0) {
-                            polygon.reverseAddNode(points[j])
-                            setOfDeleted.add(j)
-                        }
-                        for (j in points.lastIndex .. minInd) {
-                            polygon.reverseAddNode(points[j])
-                            setOfDeleted.add(j)
-                        }
-                        polygon.reverseAddNode(inters[i].pointOfEdge)
-                        points[setOfDeleted.last()] = inters[i].pointOfEdge
-                        setOfDeleted.remove(setOfDeleted.last())
-                    }
-                }
-                println(setOfDeleted)
-                trapezoids.add(polygon)
-            }*/
+            polygon = Polygon()
+            for (i in points.indices) {
+                if (!setOfDeleted.contains(i))
+                    polygon.addNode(points[i])
+            }
+            trapezoids.add(polygon)
         }
     }
 }
