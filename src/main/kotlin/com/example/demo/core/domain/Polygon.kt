@@ -2,23 +2,25 @@ package domain
 
 import com.example.demo.core.useCases.Geometric
 import useCases.Type
-import kotlin.math.abs
+import kotlin.math.*
 
 class Polygon {
 
     private var points: MutableList<Point>
     private var types: MutableList<Type>
-    private var yAverage = 0f
+    //private var yAverage = 0f
+    private val k = mutableListOf<Float?>()
+    private val b = mutableListOf<Float?>()
 
     constructor() {
         points = mutableListOf()
         types = mutableListOf()
     }
 
-    constructor(points: MutableList<Point>, types: MutableList<Type>, yAverage: Float) {
+    constructor(points: MutableList<Point>, types: MutableList<Type>/*, yAverage: Float*/) {
         this.points = points
         this.types = types
-        this.yAverage = yAverage
+        //this.yAverage = yAverage
     }
 
     fun getPoints(): MutableList<Point>? {
@@ -36,9 +38,25 @@ class Polygon {
     }
 
     fun addNode(point: Point) {
+        if (points.size > 0) {
+            k[k.lastIndex] =
+                getCoefficient(point, points.last())//(point.y - points.last().y) / (point.x - points.last().x)
+            b[b.lastIndex] = if (k.last() != null)
+                point.y - k.last()!! * point.x
+            else
+                null
+            k.add(getCoefficient(point, points[0]))
+            if (k.last() != null)
+                b.add(point.y - (k.last()?.times(point.x) ?: 0f))
+            else
+                b.add(null)
+        } else {
+            k.add(0f)
+            b.add(0f)
+        }
         types.add(Type.NONE)
         points.add(point)
-        yAverage = (yAverage * (points.size - 1) + point.y) / points.size
+        //yAverage = (yAverage * (points.size - 1) + point.y) / points.size
         if (points.size >= 3)
             determineTypes()
     }
@@ -48,32 +66,68 @@ class Polygon {
             addNode(point)
         else {
             if (index in points.indices) {
+                k.add(index, getCoefficient(point, points[index]))
+                if (k[index] != null)
+                    b.add(index, point.y - (k[index]?.times(point.x) ?: 0f))
+                else
+                    b.add(null)
+                if (index == 0) {
+                    k[k.lastIndex] = getCoefficient(point, points.last())
+                    if (k.last() != null)
+                        b[b.lastIndex] = (point.y - (k.last()?.times(point.x) ?: 0f))
+                    else
+                        b[b.lastIndex] = null
+                } else {
+                    k[index - 1] = getCoefficient(point, points[index - 1])
+                    if (k[index] != null)
+                        b[index - 1] = (point.y - (k[index - 1]?.times(point.x) ?: 0f))
+                    else
+                        b[index - 1] = null
+                }
                 types.add(index, Type.NONE)
                 points.add(index, point)
-                yAverage = (yAverage * (points.size - 1) + point.y) / points.size
+                //yAverage = (yAverage * (points.size - 1) + point.y) / points.size
                 if (points.size >= 3)
                     determineTypes()
             }
         }
     }
 
-    fun addNode(index: Int, point: Point, type: Type) {
+    /*fun addNode(index: Int, point: Point, type: Type) {
         if (index >= points.size)
             addNode(point)
         else {
             if (index in points.indices) {
                 types.add(index, type)
                 points.add(index, point)
-                yAverage = (yAverage * (points.size - 1) + point.y) / points.size
+                //yAverage = (yAverage * (points.size - 1) + point.y) / points.size
                 if (points.size >= 3)
                     determineTypes()
             }
         }
+    }*/
+
+    fun reverseAddNode(point: Point) {
+        addNode(0, point)
     }
 
     fun removeNode(index: Int) {
         if (index in points.indices) {
-            yAverage = (yAverage * points.size - points[index].y) / (points.size - 1)
+            k.removeAt(index)
+            b.removeAt(index)
+            if (index == 0) {
+                k[k.lastIndex] = getCoefficient(points.last(), points[index])
+                if (k.last() != null)
+                    b[b.lastIndex] = points[index].y - (k.last()?.times(points[index].x) ?: 0f)
+                else
+                    b[b.lastIndex] = null
+            } else {
+                k[index - 1] = getCoefficient(points[index - 1], points[index])
+                if (k[index - 1] != null)
+                    b[index - 1] = points[index].y - (k.last()?.times(points[index].x) ?: 0f)
+                else
+                    b[index - 1] = null
+            }
             points.removeAt(index)
             types.removeAt(index)
             if (points.size >= 3)
@@ -81,8 +135,14 @@ class Polygon {
         }
     }
 
+    fun removeNode(point: Point) {
+        val ind = contains(point)
+        if (ind != -1)
+            removeNode(ind)
+    }
+
     fun copy(): Polygon {
-        return Polygon(points.toMutableList(), types.toMutableList(), yAverage)
+        return Polygon(points.toMutableList(), types.toMutableList())
     }
 
     private fun determineTypes() {
@@ -96,23 +156,63 @@ class Polygon {
     }
 
     private fun determineType(point: Point, prevPoint: Point, nextPoint: Point): Type {
-        return when {
+        /*val a = (point.x - prevPoint.x).pow(2) + (point.y - prevPoint.y).pow(2)
+        val b = (point.x - nextPoint.x).pow(2) + (point.y - nextPoint.y).pow(2)
+        val c = (nextPoint.x - prevPoint.x).pow(2) + (nextPoint.y - prevPoint.y).pow(2)
+        val alpha = acos((c - a - b)) / (-2 * sqrt(a * b))*/
+        /*return when {
             prevPoint.y >= point.y && point.y >= nextPoint.y -> Type.LEFT
             prevPoint.y <= point.y && point.y <= nextPoint.y -> Type.RIGHT
             (point.y >= prevPoint.y && point.y >= nextPoint.y && point.y <= yAverage)
                     || (point.y <= prevPoint.y && point.y <= nextPoint.y && point.y >= yAverage) -> Type.WIDE //problem with WIDE
             else -> Type.NONE
+        }*/
+        return when {
+            prevPoint.y >= point.y && point.y >= nextPoint.y -> Type.LEFT
+            prevPoint.y <= point.y && point.y <= nextPoint.y -> Type.RIGHT
+            (point.y >= prevPoint.y && point.y >= nextPoint.y) -> {
+                var count = 0
+                for (i in k.indices) {
+                    if (k[i] != null && b[i] != null) {
+                        if ((k[i]!! * point.x + b[i]!!) > point.y &&
+                            point.x <= max(points[i].x, points[if (i == points.lastIndex) 0; else (i + 1)].x) &&
+                            point.x > min(points[i].x, points[if (i == points.lastIndex) 0; else (i + 1)].x)) {
+                            count++
+                        }
+                    }
+                }
+                if (count % 2 == 0)
+                    Type.NONE
+                else
+                    Type.WIDE
+            }
+            (point.y <= prevPoint.y && point.y <= nextPoint.y) -> {
+                var count = 0
+                for (i in k.indices) {
+                    if (k[i] != null && b[i] != null) {
+                        if ((k[i]!! * point.x + b[i]!!) < point.y &&
+                            point.x <= max(points[i].x, points[if (i == points.lastIndex) 0; else (i + 1)].x) &&
+                            point.x > min(points[i].x, points[if (i == points.lastIndex) 0; else (i + 1)].x))
+                            count++
+                    }
+                }
+                if (count % 2 == 0)
+                    Type.NONE
+                else
+                    Type.WIDE
+            }
+            else -> Type.NONE
         }
     }
 
-    fun contains(checkPoint: Point): Boolean {
-        for (point in points)
-            if (point == checkPoint)
-                return true
-        return false
+    fun contains(checkPoint: Point): Int {
+        for (i in points.indices)
+            if (points[i].x == checkPoint.x && points[i].y == checkPoint.y)
+                return i
+        return -1
     }
 
-    fun insert(point: Point): Int? {
+    /*fun insert(point: Point): Int? {
         if (points.size >= 2) {
             var k1: Float
             var k2: Float
@@ -142,5 +242,12 @@ class Polygon {
             }
         }
         return null
+    }*/
+
+    private fun getCoefficient(point1: Point, point2: Point): Float? {
+        return if (point1.x != point2.x)
+            (point1.y - point2.y) / (point1.x - point2.x)
+        else
+            null
     }
 }
