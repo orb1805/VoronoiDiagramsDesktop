@@ -11,6 +11,7 @@ class MyApp: App(MainView::class, Styles::class){
 
     override fun start(stage: Stage) {
         appController.fill()
+        //appController.test()
         super.start(stage)
     }
 }

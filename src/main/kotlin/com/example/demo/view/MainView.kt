@@ -46,7 +46,7 @@ class MainView : View("Voronoi diagram") {
                     }
                 }
             }
-            path {
+            /*path {
                 val points = appController.polygon.getPoints()
                 if (points != null) {
                     moveTo(points[0].x, -points[0].y)
@@ -60,8 +60,8 @@ class MainView : View("Voronoi diagram") {
                     lineTo(edge[1].x, -edge[1].y)
                     closepath()
                 }
-            }
-            val trapezoids = appController.trapezoids
+            }*/
+        val trapezoids = appController.trapezoids
             for (trapezoid in trapezoids) {
                 val points = trapezoid.getPoints()
                 if (points != null) {

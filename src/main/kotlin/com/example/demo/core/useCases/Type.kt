@@ -1,5 +1,5 @@
 package useCases
 
 enum class Type {
-    LEFT, RIGHT, WIDE, NONE, MARK
+    LEFT, RIGHT, WIDE, NONE
 }

@@ -1,10 +1,10 @@
 package domain
 
-import com.example.demo.core.useCases.Geometric
+import com.example.demo.core.domain.Trapezoid
 import useCases.Type
 import kotlin.math.*
 
-class Polygon {
+open class Polygon {
 
     private var points: MutableList<Point>
     private var types: MutableList<Type>
@@ -23,7 +23,7 @@ class Polygon {
         //this.yAverage = yAverage
     }
 
-    fun getPoints(): MutableList<Point>? {
+    open fun getPoints(): MutableList<Point>? {
         return if (points.size < 3)
             null
         else
@@ -93,20 +93,6 @@ class Polygon {
         }
     }
 
-    /*fun addNode(index: Int, point: Point, type: Type) {
-        if (index >= points.size)
-            addNode(point)
-        else {
-            if (index in points.indices) {
-                types.add(index, type)
-                points.add(index, point)
-                //yAverage = (yAverage * (points.size - 1) + point.y) / points.size
-                if (points.size >= 3)
-                    determineTypes()
-            }
-        }
-    }*/
-
     fun reverseAddNode(point: Point) {
         addNode(0, point)
     }
@@ -146,27 +132,13 @@ class Polygon {
     }
 
     private fun determineTypes() {
-        if (types[0] != Type.MARK)
-            types[0] = determineType(points[0], points.last(), points[1])
+        types[0] = determineType(points[0], points.last(), points[1])
         for (i in 1 until points.lastIndex)
-            if (types[i] != Type.MARK)
-                types[i] = determineType(points[i], points[i - 1], points[i + 1])
-        if (types.last() != Type.MARK)
-            types[types.lastIndex] = determineType(points.last(), points[points.lastIndex - 1], points[0])
+            types[i] = determineType(points[i], points[i - 1], points[i + 1])
+        types[types.lastIndex] = determineType(points.last(), points[points.lastIndex - 1], points[0])
     }
 
     private fun determineType(point: Point, prevPoint: Point, nextPoint: Point): Type {
-        /*val a = (point.x - prevPoint.x).pow(2) + (point.y - prevPoint.y).pow(2)
-        val b = (point.x - nextPoint.x).pow(2) + (point.y - nextPoint.y).pow(2)
-        val c = (nextPoint.x - prevPoint.x).pow(2) + (nextPoint.y - prevPoint.y).pow(2)
-        val alpha = acos((c - a - b)) / (-2 * sqrt(a * b))*/
-        /*return when {
-            prevPoint.y >= point.y && point.y >= nextPoint.y -> Type.LEFT
-            prevPoint.y <= point.y && point.y <= nextPoint.y -> Type.RIGHT
-            (point.y >= prevPoint.y && point.y >= nextPoint.y && point.y <= yAverage)
-                    || (point.y <= prevPoint.y && point.y <= nextPoint.y && point.y >= yAverage) -> Type.WIDE //problem with WIDE
-            else -> Type.NONE
-        }*/
         return when {
             prevPoint.y >= point.y && point.y >= nextPoint.y -> Type.LEFT
             prevPoint.y <= point.y && point.y <= nextPoint.y -> Type.RIGHT
@@ -205,49 +177,87 @@ class Polygon {
         }
     }
 
-    fun contains(checkPoint: Point): Int {
+    open fun contains(checkPoint: Point): Int {
         for (i in points.indices)
             if (points[i].x == checkPoint.x && points[i].y == checkPoint.y)
                 return i
         return -1
     }
 
-    /*fun insert(point: Point): Int? {
-        if (points.size >= 2) {
-            var k1: Float
-            var k2: Float
-            for (i in 0 until points.lastIndex) {
-                if (point.x == points[i].x && point.x == points[i + 1].x) {
-                    addNode(i + 1, point, Type.MARK)
-                    return i + 1
-                }
-                k1 = (point.y - points[i].y) / (point.x - points[i].x)
-                k2 = (point.y - points[i + 1].y) / (point.x - points[i + 1].x)
-                if (abs(k1 - k2) < 0.01 &&
-                    abs(Geometric.length(point, points[i]) + Geometric.length(point, points[i + 1]) - Geometric.length(points[i], points[i + 1])) < 0.01) {
-                    addNode(i + 1, point, Type.MARK)
-                    return i + 1
-                }
-            }
-            if (point.x == points.last().x && point.x == points[0].x) {
-                addNode(0, point, Type.MARK)
-                return 0
-            }
-            k1 = (point.y - points.last().y) / (point.x - points.last().x)
-            k2 = (point.y - points[0].y) / (point.x - points[0].x)
-            if (abs(k1 - k2) < 0.01 &&
-                abs(Geometric.length(point, points.last()) + Geometric.length(point, points[0]) - Geometric.length(points.last(), points[0])) < 0.01) {
-                addNode(0, point, Type.MARK)
-                return 0
-            }
-        }
-        return null
-    }*/
-
     private fun getCoefficient(point1: Point, point2: Point): Float? {
         return if (point1.x != point2.x)
             (point1.y - point2.y) / (point1.x - point2.x)
         else
             null
+    }
+
+    open fun isDegenerate(): Boolean {
+        for (i in 1 .. points.lastIndex)
+            if (points[i].y != points[i - 1].y)
+                return false
+        return true
+    }
+
+    fun toTrapezoid(number: Int): Trapezoid? {
+        return when (points.size) {
+            4 -> Trapezoid(points[0], points[1], points[2], points[3], number)
+            3 -> Trapezoid(points[0], points[1], points[2], points[2], number)
+            else -> {
+                if (points.size > 4) {
+                    var flag = true
+                    val tmpoints = points.toMutableList()
+                    var k1: Float?
+                    var k2: Float?
+                    var b1: Float?
+                    var b2: Float?
+                    var listToDelete: MutableList<Int>
+                    while (tmpoints.size > 4 && flag) {
+                        listToDelete = mutableListOf()
+                        k1 = getCoefficient(tmpoints.last(), tmpoints[0])
+                        k2 = getCoefficient(tmpoints[0], tmpoints[1])
+                        b1 = if (k1 != null)
+                            tmpoints[0].y - k1 * tmpoints[0].y
+                        else
+                            null
+                        b2 = if (k2 != null)
+                            tmpoints[0].y - k2 * tmpoints[0].y
+                        else
+                            null
+                        if (k1 == k2 && b1 == b2)
+                            listToDelete.add(0)
+                        for (i in 1 until  tmpoints.lastIndex) {
+                            k1 = k2//getCoefficient(tmpoints[i - 1], tmpoints[i])
+                            k2 = getCoefficient(tmpoints[i], tmpoints[i + 1])
+                            b1 = b2
+                            b2 = if (k2 != null)
+                                tmpoints[i].y - k2 * tmpoints[i].y
+                            else
+                                null
+                            if (k1 == k2 && b1 == b2)
+                                listToDelete.add(i)
+                        }
+                        k1 = k2//getCoefficient(tmpoints[tmpoints.lastIndex - 1], tmpoints.last())
+                        k2 = getCoefficient(tmpoints.last(), tmpoints[0])
+                        b1 = b2
+                        b2 = if (k2 != null)
+                            tmpoints.last().y - k2 * tmpoints.last().y
+                        else
+                            null
+                        if (k1 == k2 && b1 == b2)
+                            listToDelete.add(tmpoints.lastIndex)
+                        if (listToDelete.isEmpty())
+                            flag = false
+                        else
+                            for (i in listToDelete.lastIndex downTo 0)
+                                tmpoints.removeAt(i)
+                    }
+                    if (flag)
+                        Trapezoid(tmpoints[0], tmpoints[1], tmpoints[2], tmpoints[3], number)
+                    else
+                        null
+                } else
+                    null
+            }
+        }
     }
 }
