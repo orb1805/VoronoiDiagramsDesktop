@@ -6,13 +6,13 @@ import com.google.gson.Gson
 import domain.Point
 import domain.Polygon
 import tornadofx.*
-import useCases.Type
 import java.io.File
 
 class AppController : Controller() {
 
     val polygon = Polygon()
     lateinit var trapezoids: MutableList<Trapezoid>
+    val medialAxes = mutableListOf<MutableList<Point>>()
 
     fun fill() {
         val gson = Gson()
@@ -25,11 +25,17 @@ class AppController : Controller() {
                 )
             )
         trapezoids = Geometric.trapezoidateToList(polygon)
+        for (i in trapezoids)
+            Geometric.buildBisectors(i)
         val trapezoidsTree = Geometric.trapezoidateToTree(trapezoids)
         if (trapezoidsTree != null) {
             val treeTraveler = TreeTraveler(trapezoidsTree)
             println(treeTraveler.fromLeavesToRootTravel())
         }
+        for (i in trapezoids) {
+            medialAxes.add(Geometric.buildMedialAxes(i))
+        }
+        println(medialAxes)
     }
 
     fun test() {

@@ -17,8 +17,10 @@ open class Trapezoid
 
     private val upperEdge: List<Point>
     private val lowerEdge: List<Point>
-    private val isTraingle: Boolean
-
+    public val isTraingle: Boolean
+    public var isReal: MutableList<Boolean>
+    public var kOfBisectors = MutableList<Float?>(4) { 0f }
+    public var bOfBisectors = MutableList<Float?>(4) { 0f }
 
     init {
         when {
@@ -52,6 +54,7 @@ open class Trapezoid
             else -> isTraingle = false
         }
         if (isTraingle) {
+            isReal = mutableListOf(true, true, true)
             when {
                 point1.y == point2.y -> {
                     if (point1.y > point3.y) {
@@ -83,6 +86,7 @@ open class Trapezoid
             }
         }
         else {
+            isReal = mutableListOf(true, true, true, true)
             when (point1.y) {
                 point2.y -> {
                     if (point1.y > point3.y) {
@@ -126,7 +130,10 @@ open class Trapezoid
     }
 
     override fun getPoints(): MutableList<Point>? {
-        return mutableListOf(point1, point2, point3, point4)
+        return if (isTraingle)
+            mutableListOf(point1, point2, point3)
+        else
+            mutableListOf(point1, point2, point3, point4)
     }
 
     override fun contains(checkPoint: Point): Int {

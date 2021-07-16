@@ -8,7 +8,6 @@ open class Polygon {
 
     private var points: MutableList<Point>
     private var types: MutableList<Type>
-    //private var yAverage = 0f
     private val k = mutableListOf<Float?>()
     private val b = mutableListOf<Float?>()
 
@@ -17,10 +16,9 @@ open class Polygon {
         types = mutableListOf()
     }
 
-    constructor(points: MutableList<Point>, types: MutableList<Type>/*, yAverage: Float*/) {
+    constructor(points: MutableList<Point>, types: MutableList<Type>) {
         this.points = points
         this.types = types
-        //this.yAverage = yAverage
     }
 
     open fun getPoints(): MutableList<Point>? {
@@ -56,7 +54,6 @@ open class Polygon {
         }
         types.add(Type.NONE)
         points.add(point)
-        //yAverage = (yAverage * (points.size - 1) + point.y) / points.size
         if (points.size >= 3)
             determineTypes()
     }
@@ -86,7 +83,6 @@ open class Polygon {
                 }
                 types.add(index, Type.NONE)
                 points.add(index, point)
-                //yAverage = (yAverage * (points.size - 1) + point.y) / points.size
                 if (points.size >= 3)
                     determineTypes()
             }
@@ -95,40 +91,6 @@ open class Polygon {
 
     fun reverseAddNode(point: Point) {
         addNode(0, point)
-    }
-
-    fun removeNode(index: Int) {
-        if (index in points.indices) {
-            k.removeAt(index)
-            b.removeAt(index)
-            if (index == 0) {
-                k[k.lastIndex] = getCoefficient(points.last(), points[index])
-                if (k.last() != null)
-                    b[b.lastIndex] = points[index].y - (k.last()?.times(points[index].x) ?: 0f)
-                else
-                    b[b.lastIndex] = null
-            } else {
-                k[index - 1] = getCoefficient(points[index - 1], points[index])
-                if (k[index - 1] != null)
-                    b[index - 1] = points[index].y - (k.last()?.times(points[index].x) ?: 0f)
-                else
-                    b[index - 1] = null
-            }
-            points.removeAt(index)
-            types.removeAt(index)
-            if (points.size >= 3)
-                determineTypes()
-        }
-    }
-
-    fun removeNode(point: Point) {
-        val ind = contains(point)
-        if (ind != -1)
-            removeNode(ind)
-    }
-
-    fun copy(): Polygon {
-        return Polygon(points.toMutableList(), types.toMutableList())
     }
 
     private fun determineTypes() {
@@ -226,7 +188,7 @@ open class Polygon {
                         if (k1 == k2 && b1 == b2)
                             listToDelete.add(0)
                         for (i in 1 until  tmpoints.lastIndex) {
-                            k1 = k2//getCoefficient(tmpoints[i - 1], tmpoints[i])
+                            k1 = k2
                             k2 = getCoefficient(tmpoints[i], tmpoints[i + 1])
                             b1 = b2
                             b2 = if (k2 != null)
@@ -236,7 +198,7 @@ open class Polygon {
                             if (k1 == k2 && b1 == b2)
                                 listToDelete.add(i)
                         }
-                        k1 = k2//getCoefficient(tmpoints[tmpoints.lastIndex - 1], tmpoints.last())
+                        k1 = k2
                         k2 = getCoefficient(tmpoints.last(), tmpoints[0])
                         b1 = b2
                         b2 = if (k2 != null)
@@ -248,8 +210,9 @@ open class Polygon {
                         if (listToDelete.isEmpty())
                             flag = false
                         else
-                            for (i in listToDelete.lastIndex downTo 0)
+                            for (i in listToDelete.lastIndex downTo 0) {
                                 tmpoints.removeAt(i)
+                            }
                     }
                     if (flag)
                         Trapezoid(tmpoints[0], tmpoints[1], tmpoints[2], tmpoints[3], number)
