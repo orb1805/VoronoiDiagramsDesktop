@@ -1,24 +1,21 @@
 package domain
 
+import com.example.demo.core.domain.Line
+import com.example.demo.core.domain.Point
 import com.example.demo.core.domain.Trapezoid
 import useCases.Type
 import kotlin.math.*
 
-open class Polygon {
+open class Polygon() {
 
     private var points: MutableList<Point>
     private var types: MutableList<Type>
     private val k = mutableListOf<Float?>()
     private val b = mutableListOf<Float?>()
 
-    constructor() {
+    init {
         points = mutableListOf()
         types = mutableListOf()
-    }
-
-    constructor(points: MutableList<Point>, types: MutableList<Type>) {
-        this.points = points
-        this.types = types
     }
 
     open fun getPoints(): MutableList<Point>? {
@@ -36,6 +33,9 @@ open class Polygon {
     }
 
     fun addNode(point: Point) {
+        for (checkPoint in points)
+            if (checkPoint == point)
+                return
         if (points.size > 0) {
             k[k.lastIndex] =
                 getCoefficient(point, points.last())//(point.y - points.last().y) / (point.x - points.last().x)
@@ -158,6 +158,57 @@ open class Polygon {
             if (points[i].y != points[i - 1].y)
                 return false
         return true
+    }
+
+    fun isInside(checkPoint: Point?): Boolean {
+        checkPoint ?: return false
+        var upperCount = 0
+        var lowerCount = 0
+        var contains = false
+        var line: Line
+        for (i in 0 until points.lastIndex) {
+            line = Line.getLine(
+                points[i],
+                points[i + 1]
+            )
+            if (
+                line.k != null
+                && ((checkPoint.x <= points[i].x && checkPoint.x >= points[i + 1].x)
+                                || (checkPoint.x >= points[i].x && checkPoint.x <= points[i + 1].x))) {
+                when {
+                    checkPoint.y > line.k!! * checkPoint.x + line.b ->
+                        upperCount++
+                    checkPoint.y < line.k!! * checkPoint.x + line.b ->
+                        lowerCount++
+                    else ->
+                        contains = true
+                }
+            } else {
+                if (checkPoint.x == line.b)
+                    contains = true
+            }
+        }
+        line = Line.getLine(
+            points[0],
+            points.last()
+        )
+        if ((checkPoint.x <= points[0].x && checkPoint.x >= points.last().x)
+                || (checkPoint.x >= points[0].x && checkPoint.x <= points.last().x)) {
+            if (line.k != null) {
+                when {
+                    checkPoint.y > line.k!! * checkPoint.x + line.b ->
+                        upperCount++
+                    checkPoint.y < line.k!! * checkPoint.x + line.b ->
+                        lowerCount++
+                    else ->
+                        contains = true
+                }
+            } else {
+                if (checkPoint.x == line.b)
+                    contains = true
+            }
+        }
+        return (upperCount % 2 == 1 && lowerCount % 2 == 1) || contains
     }
 
     fun toTrapezoid(number: Int): Trapezoid? {

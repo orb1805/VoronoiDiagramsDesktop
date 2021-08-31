@@ -10,8 +10,9 @@ class MyApp: App(MainView::class, Styles::class){
     private val appController: AppController by inject()
 
     override fun start(stage: Stage) {
-        appController.fill()
+        //appController.fill()
         //appController.test()
+        appController.testDiagram()
         super.start(stage)
     }
 }

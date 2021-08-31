@@ -1,10 +1,6 @@
 package com.example.demo.core.domain
 
-import domain.Point
 import domain.Polygon
-import useCases.Type
-import kotlin.math.max
-import kotlin.math.min
 
 open class Trapezoid
     (
@@ -17,10 +13,8 @@ open class Trapezoid
 
     private val upperEdge: List<Point>
     private val lowerEdge: List<Point>
-    public val isTraingle: Boolean
-    public var isReal: MutableList<Boolean>
-    public var kOfBisectors = MutableList<Float?>(4) { 0f }
-    public var bOfBisectors = MutableList<Float?>(4) { 0f }
+    val isTraingle: Boolean
+    var isReal: MutableList<Boolean>
 
     init {
         when {
@@ -116,16 +110,6 @@ open class Trapezoid
                     }
                 }
             }
-        }
-    }
-
-    fun getPoint(index: Int): Point? {
-        return when (index) {
-            0 -> point1
-            1 -> point2
-            2 -> point3
-            3 -> point4
-            else -> null
         }
     }
 

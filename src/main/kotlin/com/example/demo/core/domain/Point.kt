@@ -1,4 +1,4 @@
-package domain
+package com.example.demo.core.domain
 
 import kotlin.math.abs
 
@@ -6,7 +6,7 @@ data class Point(var x: Float, var y: Float) {
 
     override fun equals(other: Any?): Boolean {
         val point = other as Point
-        return abs(x - point.x) < 0.0001f && abs(y - point.y) < 0.0001f
+        return abs(x - point.x) < 0.01f && abs(y - point.y) < 0.01f
     }
 
     operator fun minus(a: Point): Point {
@@ -21,4 +21,6 @@ data class Point(var x: Float, var y: Float) {
         return Point(x / a, y / a)
     }
 
+    operator fun times(a: Float): Point =
+        Point(x * a, y * a)
 }

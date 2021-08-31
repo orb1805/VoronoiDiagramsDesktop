@@ -1,7 +1,7 @@
 package com.example.demo.core.useCases
 
 import com.example.demo.core.domain.Trapezoid
-import domain.Point
+import com.example.demo.core.domain.Point
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 
