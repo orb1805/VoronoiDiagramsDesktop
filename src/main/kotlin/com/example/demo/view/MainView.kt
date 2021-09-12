@@ -28,13 +28,41 @@ class MainView : View("Voronoi diagram") {
                 for (view in views)
                     root += view
                 appController.nextStep()
-            } else
+                root += drawPreResult(appController)
+            } else {
                 root += drawResult(appController) ?: return@action
+            }
         }
     }
 
     init {
         root += button
+    }
+
+    fun drawPreResult(appController: AppController): HBox {
+        return hbox {
+            val points = appController.polygon.getPoints() ?: return@hbox
+            val centers = appController.centers.subList(0, appController.centers.size - 2)
+            path {
+                moveTo(points[0].x, -points[0].y)
+                for (i in 1..points.lastIndex)
+                    lineToPoint(this, points[i])
+                closepath()
+                for (center in centers) {
+                    center ?: continue
+                    moveTo(center.x + 2.5f, -center.y - 2.5f)
+                    lineTo(center.x - 2.5f, -center.y + 2.5f)
+                    moveTo(center.x - 2.5f, -center.y - 2.5f)
+                    lineTo(center.x + 2.5f, -center.y + 2.5f)
+                    moveTo(center.x - 2.5f, -center.y)
+                    lineTo(center.x + 2.5f, -center.y)
+                    moveTo(center.x, -center.y - 2.5f)
+                    lineTo(center.x, -center.y + 2.5f)
+                    /*moveTo(center.x, -center.y)
+                    lineTo(center.parentX, -center.parentY)*/
+                }
+            }
+        }
     }
 
     private fun drawSnapshot(appController: AppController): HBox {
@@ -123,8 +151,10 @@ class MainView : View("Voronoi diagram") {
                         lineTo(center.x + 2.5f, -center.y + 2.5f)
                         moveTo(center.x - 2.5f, -center.y)
                         moveTo(center.x + 2.5f, -center.y)
-                        moveTo(center.x, -center.y - 2.5f)
-                        moveTo(center.x, -center.y + 2.5f)
+                        moveTo(center.x, -center.y)
+                        lineTo(center.parent1X, -center.parent1Y)
+                        moveTo(center.x, -center.y)
+                        lineTo(center.parent2X, -center.parent2Y)
                     }
                 }
             }

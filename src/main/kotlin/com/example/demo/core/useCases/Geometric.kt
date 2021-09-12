@@ -1533,7 +1533,25 @@ class Geometric {
                 for (i in 1 until points.lastIndex)
                     tmpPolygon.addNode(points[i])
             }
+            tmpPolygon.getPoints()?.first()?.imageX = minPoint.x
+            tmpPolygon.getPoints()?.first()?.imageY = minPoint.y
+            /*tmpPolygon.getPoints()?.last()?.imageX = minPoint.x
+            tmpPolygon.getPoints()?.last()?.imageY = minPoint.y*/
             res.add(minPoint)
+            minPoint.parent1X = points[minInd].imageX
+            minPoint.parent1Y = points[minInd].imageY
+            minPoint.parent2X = points[
+                    if (minInd != 0)
+                        minInd -1
+                    else
+                        points.lastIndex
+            ].imageX
+            minPoint.parent2Y = points[
+                    if (minInd != 0)
+                        minInd -1
+                    else
+                        points.lastIndex
+            ].imageY
             return CalculationSnapshot(polygon, intersections, minPoint, tmpPolygon, mainPolygon)//findSimpleVoronoiDiagram(tmpPolygon, res, polygon)
         }
 
