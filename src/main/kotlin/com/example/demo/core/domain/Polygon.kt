@@ -274,4 +274,8 @@ open class Polygon() {
             }
         }
     }
+
+    operator fun plusAssign(point: Point) {
+        this.addNode(point)
+    }
 }

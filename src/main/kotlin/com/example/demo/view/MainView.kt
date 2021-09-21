@@ -1,14 +1,12 @@
 package com.example.demo.view
 
 import com.example.demo.app.AppController
-import com.example.demo.core.domain.Line
-import com.example.demo.core.domain.Section
-import com.example.demo.core.domain.Point
-import com.example.demo.core.domain.lineToPoint
+import com.example.demo.core.domain.*
 import javafx.scene.control.Button
 import javafx.scene.layout.HBox
 import javafx.scene.layout.VBox
 import tornadofx.*
+import tornadofx.lineTo
 import useCases.Type
 import kotlin.math.abs
 
@@ -39,121 +37,70 @@ class MainView : View("Voronoi diagram") {
         root += button
     }
 
-    fun drawPreResult(appController: AppController): HBox {
-        return hbox {
+    private fun drawPreResult(appController: AppController): HBox =
+        hbox {
             val points = appController.polygon.getPoints() ?: return@hbox
             val centers = appController.centers.subList(0, appController.centers.size - 2)
             path {
                 moveTo(points[0].x, -points[0].y)
                 for (i in 1..points.lastIndex)
-                    lineToPoint(this, points[i])
+                    lineTo(points[i])
                 closepath()
-                for (center in centers) {
-                    center ?: continue
-                    moveTo(center.x + 2.5f, -center.y - 2.5f)
-                    lineTo(center.x - 2.5f, -center.y + 2.5f)
-                    moveTo(center.x - 2.5f, -center.y - 2.5f)
-                    lineTo(center.x + 2.5f, -center.y + 2.5f)
-                    moveTo(center.x - 2.5f, -center.y)
-                    lineTo(center.x + 2.5f, -center.y)
-                    moveTo(center.x, -center.y - 2.5f)
-                    lineTo(center.x, -center.y + 2.5f)
-                    /*moveTo(center.x, -center.y)
-                    lineTo(center.parentX, -center.parentY)*/
-                }
+                for (center in centers)
+                    drawCross(center)
             }
         }
-    }
 
-    private fun drawSnapshot(appController: AppController): HBox {
-        return hbox {
+    private fun drawSnapshot(appController: AppController): HBox =
+        hbox {
             val points = appController.snapshot!!.polygon.getPoints() ?: return@hbox
             val mainPoints = appController.snapshot!!.mainPolygon.getPoints() ?: return@hbox
             val centers = appController.snapshot!!.centers
             val center = appController.snapshot!!.center
             path {
-                moveTo(points[0].x, -points[0].y)
+                moveTo(points[0])
                 for (i in 1..points.lastIndex)
-                    lineToPoint(this, points[i])
+                    lineTo(points[i])
                 closepath()
-                for (center in centers) {
-                    center ?: continue
-                    moveTo(center.x + 2.5f, -center.y - 2.5f)
-                    lineTo(center.x - 2.5f, -center.y + 2.5f)
-                    moveTo(center.x - 2.5f, -center.y - 2.5f)
-                    lineTo(center.x + 2.5f, -center.y + 2.5f)
-                    moveTo(center.x - 2.5f, -center.y)
-                    lineTo(center.x + 2.5f, -center.y)
-                    moveTo(center.x, -center.y - 2.5f)
-                    lineTo(center.x, -center.y + 2.5f)
-                }
-                moveTo(center.x + 5f, -center.y - 5f)
-                lineTo(center.x - 5f, -center.y + 5f)
-                moveTo(center.x - 5f, -center.y - 5f)
-                lineTo(center.x + 5f, -center.y + 5f)
-                moveTo(center.x - 5f, -center.y)
-                lineTo(center.x + 5f, -center.y)
-                moveTo(center.x, -center.y - 2.5f)
-                lineTo(center.x, -center.y + 2.5f)
-                for (i in 1..points.lastIndex) {
+                for (center in centers)
+                    if (center != null)
+                        drawCross(center)
+                    else
+                        continue
+                drawBigFlake(center)
+                for (i in 0 until points.lastIndex) {
                     centers[i] ?: continue
-                    moveTo(points[i].x, -points[i].y)
-                    lineTo(centers[i]!!.x, -centers[i]!!.y)
-                    lineTo(points[i - 1].x, -points[i - 1].y)
+                    moveTo(points[i])
+                    lineTo(centers[i]!!)
+                    lineTo(points[i + 1])
                 }
-                if (centers[0] != null) {
-                    moveTo(points[0].x, -points[0].y)
-                    lineTo(centers[0]!!.x, -centers[0]!!.y)
-                    lineTo(points.last().x, -points.last().y)
+                if (centers.last() != null) {
+                    moveTo(points[0])
+                    lineTo(centers.last()!!)
+                    lineTo(points.last())
                 }
 
-               var step: Point
-               var currentPoint: Point
-               var count: Int
-                for (i in 0 until mainPoints.lastIndex) {
-                    step = (mainPoints[i + 1] - mainPoints[i]) / 6f
-                    currentPoint = mainPoints[i]
-                    count = 0
-                    while (count < 3) {
-                        moveTo(currentPoint.x, -currentPoint.y)
-                        lineToPoint(this, currentPoint + step)
-                        currentPoint += step * 2f
-                        count++
-                    }
-                }
-                step = (mainPoints.first() - mainPoints.last()) / 6f
-                currentPoint = mainPoints.last()
-                count = 0
-                while (count < 3) {
-                    moveTo(currentPoint.x, -currentPoint.y)
-                    lineToPoint(this, currentPoint + step)
-                    currentPoint += step * 2f
-                    count++
-                }
+                for (i in 0 until mainPoints.lastIndex)
+                    stretchedLine(mainPoints[i + 1], mainPoints[i])
+                stretchedLine(mainPoints.first(), mainPoints.last())
             }
         }
-    }
 
-    fun drawResult(appController: AppController) =
+    private fun drawResult(appController: AppController) =
         if (flag)
             hbox {
                 flag = false
                 val points = appController.polygon.getPoints() ?: return@hbox
                 path {
-                    moveTo(points.first().x, -points.first().y)
+                    moveTo(points.first())
                     for (i in 1..points.lastIndex)
-                        lineTo(points[i].x, -points[i].y)
+                        lineTo(points[i])
                     closepath()
                     for (center in appController.centers) {
-                        moveTo(center.x + 2.5f, -center.y - 2.5f)
-                        lineTo(center.x - 2.5f, -center.y + 2.5f)
-                        moveTo(center.x - 2.5f, -center.y - 2.5f)
-                        lineTo(center.x + 2.5f, -center.y + 2.5f)
-                        moveTo(center.x - 2.5f, -center.y)
-                        moveTo(center.x + 2.5f, -center.y)
-                        moveTo(center.x, -center.y)
+                        drawCross(center)
+                        moveTo(center)
                         lineTo(center.parent1X, -center.parent1Y)
-                        moveTo(center.x, -center.y)
+                        moveTo(center)
                         lineTo(center.parent2X, -center.parent2Y)
                     }
                 }
@@ -289,14 +236,6 @@ class MainView : View("Voronoi diagram") {
                         moveTo(center.x - 2.5f, -center.y - 2.5f)
                         lineTo(center.x + 2.5f, -center.y + 2.5f)
                     }
-                    var i = 0
-                    /*while (i < centers.size) {
-                        moveTo(centers[i + 1].x, -centers[i + 1].y)
-                        lineTo(centers[i].x, -centers[i].y)
-                        lineTo(centers[i + 2].x, -centers[i + 2].y)
-                        i += 3
-                    }*/
-                    //closepath()
                 }
             }
         }

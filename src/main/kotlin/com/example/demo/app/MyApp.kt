@@ -13,6 +13,7 @@ class MyApp: App(MainView::class, Styles::class){
         //appController.fill()
         //appController.test()
         appController.testDiagram()
+        //appController.testIntersection()
         super.start(stage)
     }
 }

@@ -1,10 +1,7 @@
 package com.example.demo.core.useCases
 
 import com.example.demo.app.main
-import com.example.demo.core.domain.CalculationSnapshot
-import com.example.demo.core.domain.Line
-import com.example.demo.core.domain.Trapezoid
-import com.example.demo.core.domain.Point
+import com.example.demo.core.domain.*
 import domain.Polygon
 import useCases.Type
 import kotlin.math.*
@@ -436,7 +433,7 @@ class Geometric {
             return edgeList
         }
 
-        fun getCoefficients(point1: Point, point2: Point): List<Float>? {
+        private fun getCoefficients(point1: Point, point2: Point): List<Float>? {
             return if (point1.x != point2.x)
                 listOf(
                     (point1.y - point2.y) / (point1.x - point2.x),
@@ -446,7 +443,7 @@ class Geometric {
                 null
         }
 
-        fun getLine(point1: Point, point2: Point): Line {
+        private fun getLine(point1: Point, point2: Point): Line {
             return if (point1.x != point2.x)
                 Line(
                     (point1.y - point2.y) / (point1.x - point2.x),
@@ -535,11 +532,11 @@ class Geometric {
                     (a1 <= a2 && b1 >= b2 || a1 >= a2 && b1 <= b2)
         }
 
-        fun areSectionsEqual(point1: Point, point2: Point, point3: Point, point4: Point): Boolean {
+        private fun areSectionsEqual(point1: Point, point2: Point, point3: Point, point4: Point): Boolean {
             return (point1 == point3 && point2 == point4) || (point1 == point4 && point2 == point3)
         }
 
-        fun checkIntersection(point1: Point, point2: Point, point3: Point, point4: Point): Boolean {
+        private fun checkIntersection(point1: Point, point2: Point, point3: Point, point4: Point): Boolean {
             val ax1 = min(point1.x, point2.x)
             val bx1 = max(point1.x, point2.x)
             val ax2 = min(point3.x, point4.x)
@@ -565,7 +562,7 @@ class Geometric {
                 false
         }
 
-        fun getPerpendicular(line: Line, point: Point): Line {
+        private fun getPerpendicular(line: Line, point: Point): Line {
             return if (line.k != null) {
                 if (line.k != 0f) {
                     Line(
@@ -584,7 +581,7 @@ class Geometric {
                 )
         }
 
-        fun getBisector(line1: Line, line2: Line, isPlusA: Boolean, isPlusB: Boolean): Line? {
+        private fun getBisector(line1: Line, line2: Line, isPlusA: Boolean, isPlusB: Boolean): Line? {
             val point = getIntersection(line1, line2)
             return if (point != null) {
                 val pointA: Point// = point1 - point2
@@ -641,7 +638,7 @@ class Geometric {
                 null
         }
 
-        fun getIntersection(line1: Line, line2: Line): Point? {
+        private fun getIntersection(line1: Line, line2: Line): Point? {
             return when {
                 line1.k != null && line2.k != null -> {
                     if (abs(line1.k - line2.k) < 0.0001f)
@@ -677,7 +674,7 @@ class Geometric {
                 findMedialAxesInTrapezoid(trapezoid)
         }
 
-        fun findMedialAxesInTriangle(trapezoid: Trapezoid): MutableList<Point> {
+        private fun findMedialAxesInTriangle(trapezoid: Trapezoid): MutableList<Point> {
             val perpendicular1: Line
             val perpendicular2: Line
             val bisector: Line?
@@ -893,7 +890,7 @@ class Geometric {
                 mutableListOf()
         }
 
-        fun findMedialAxesInTrapezoid(trapezoid: Trapezoid): MutableList<Point> {
+        private fun findMedialAxesInTrapezoid(trapezoid: Trapezoid): MutableList<Point> {
             val points = trapezoid.getPoints()
             return if (points != null) {
                 if (countOfReal(trapezoid) == 2) {
@@ -1423,10 +1420,10 @@ class Geometric {
                 mutableListOf()
         }
 
-        fun length(point1: Point, point2: Point): Float =
+        private fun length(point1: Point, point2: Point): Float =
             sqrt((point1.x - point2.x).pow(2) + (point1.y - point2.y).pow(2))
 
-        fun countOfReal(trapezoid: Trapezoid): Int {
+        private fun countOfReal(trapezoid: Trapezoid): Int {
             var count = 0
             val isReal = trapezoid.isReal
             for (i in isReal)
@@ -1435,15 +1432,15 @@ class Geometric {
             return count
         }
 
-        fun findSimpleVoronoiDiagram(polygon: Polygon, mainPolygon: Polygon): CalculationSnapshot? {//MutableList<Point> {
+        fun findSimpleVoronoiDiagram(
+            polygon: Polygon,
+            mainPolygon: Polygon
+        ): CalculationSnapshot? {
             val tmpPolygon = Polygon()
             val res = mutableListOf<Point>()
             val lines = mutableListOf<Line>()
-            val bisectors = mutableListOf<Line>()
-            val intersections = mutableListOf<Point?>()
             val points = polygon.getPoints()
-                ?: return null
-            println("points: $points")
+                ?: return error()
             for (i in 0 until points.lastIndex)
                 lines.add(
                     getLine(points[i], points[i + 1])
@@ -1451,60 +1448,13 @@ class Geometric {
             lines.add(
                 getLine(points.last(), points[0])
             )
-            bisectors.add(
-                getBisector(
-                    lines.last(),
-                    lines[0],
-                    (points[0].x != points.last().x && points[0].x < points.last().x)
-                            || (points[0].x == points.last().x && points[0].y < points.last().y),
-                    (points[0].x != points[1].x && points[0].x < points[1].x)
-                            || (points[0].x == points[1].x && points[0].y < points[1].y)
-                )!!
-            )
-            for (i in 1 until lines.lastIndex)
-                bisectors.add(
-                    getBisector(
-                        lines[i - 1],
-                        lines[i],
-                        (points[i].x != points[i - 1].x && points[i].x < points[i - 1].x)
-                                || (points[i].x == points[i - 1].x && points[i].y < points[i - 1].y),
-                        (points[i].x != points[i + 1].x && points[i].x < points[i + 1].x)
-                                || (points[i].x == points[i + 1].x && points[i].y < points[i + 1].y)
-                    )!!
-                )
-            bisectors.add(
-                getBisector(
-                    lines[lines.lastIndex - 1],
-                    lines.last(),
-                    (points.last().x != points[lines.lastIndex - 1].x && points.last().x < points[lines.lastIndex - 1].x)
-                            || (points.last().x == points[lines.lastIndex - 1].x && points.last().y < points[lines.lastIndex - 1].y),
-                    (points.last().x != points[0].x && points.last().x < points[0].x)
-                            || (points.last().x == points[0].x && points.last().y < points[0].y)
-                )!!
-            )
-            var intersection = getIntersection(
-                bisectors.last(),
-                bisectors[0]
-            )
-            intersections += if (mainPolygon.isInside(intersection ?: Point(Float.MAX_VALUE, Float.MAX_VALUE)))
-                intersection
-            else
-                null
-            for (i in 1..bisectors.lastIndex) {
-                intersection = getIntersection(
-                    bisectors[i - 1],
-                    bisectors[i]
-                )
-                intersections += if (mainPolygon.isInside(intersection))
-                    intersection
-                else
-                    null
-            }
+            val bisectors = findBisectors(lines, points) ?: return error()
+            val intersections = findIntersections(bisectors, mainPolygon)
             var minLength = Float.MAX_VALUE
             var tmpLength: Float
             var minPoint = Point(0f, 0f)
             var minInd = 0
-            for (i in intersections.indices) {
+            for (i in intersections.indices)
                 if (intersections[i] != null) {
                     tmpLength = lengthFromPointToLine(lines[i], intersections[i]!!)
                     if (minLength > tmpLength) {
@@ -1513,63 +1463,71 @@ class Geometric {
                         minInd = i
                     }
                 }
+            val newLineA: Point
+            val newLineB:Point
+            val intersection = when (minInd) {
+                0 -> {
+                    getIntersection(lines.last(), lines.second())
+                }
+                lines.lastIndex -> {
+                    getIntersection(lines.preLast(), lines.first())
+                }
+                else -> {
+                    getIntersection(lines[minInd - 1], lines[minInd + 1])
+                }
             }
-            println("intersections: $intersections")
-            println("minInd = $minInd")
-            println("minPoint = $minPoint")
-            intersection = when (minInd) {
-                0 -> getIntersection(lines[minInd], lines[lines.lastIndex - 1])
-                1 -> getIntersection(lines[minInd], lines.last())
-                else -> getIntersection(lines[minInd], lines[minInd - 2])
-            }
-            intersection ?: return CalculationSnapshot(Polygon(), mutableListOf(), Point(0f, 0f), Polygon(), Polygon())
+            intersection ?: return error()
+            /*var countOfIntersections = 0
+            for (i in 0 until points.lastIndex)
+                 if (areIntersected(newLineA, intersection, points[i], points[i + 1])
+                     || areIntersected(newLineB, intersection, points[i], points[i + 1]))
+                         countOfIntersections++
+            if (areIntersected(newLineA, intersection, points.last(), points.first())
+                || areIntersected(newLineB, intersection, points.last(), points.first()))
+                    countOfIntersections++
+            println("---------------$countOfIntersections---------------")
+            if (countOfIntersections == 7) {
+                println(intersection)
+                intersection = mirror(intersection, lines[minInd - 1]) ?: intersection
+                println(intersection)
+            }*/
             tmpPolygon.addNode(intersection)
-            if (minInd != 0) {
-                for (i in minInd + 1..points.lastIndex)
-                    tmpPolygon.addNode(points[i])
-                for (i in 0 until minInd - 1)
-                    tmpPolygon.addNode(points[i])
-            } else {
-                for (i in 1 until points.lastIndex)
-                    tmpPolygon.addNode(points[i])
-            }
+            if (minInd != points.lastIndex) {
+                for (i in minInd + 2..points.lastIndex)
+                    tmpPolygon += points[i]
+                for (i in 0 until minInd)
+                    tmpPolygon += points[i]
+            } else
+                for (i in 1 until minInd)
+                    tmpPolygon += points[i]
             tmpPolygon.getPoints()?.first()?.imageX = minPoint.x
             tmpPolygon.getPoints()?.first()?.imageY = minPoint.y
-            /*tmpPolygon.getPoints()?.last()?.imageX = minPoint.x
-            tmpPolygon.getPoints()?.last()?.imageY = minPoint.y*/
             res.add(minPoint)
             minPoint.parent1X = points[minInd].imageX
             minPoint.parent1Y = points[minInd].imageY
             minPoint.parent2X = points[
-                    if (minInd != 0)
-                        minInd -1
+                    if (minInd != points.lastIndex)
+                        minInd + 1
                     else
-                        points.lastIndex
+                        0
             ].imageX
             minPoint.parent2Y = points[
-                    if (minInd != 0)
-                        minInd -1
+                    if (minInd != points.lastIndex)
+                        minInd + 1
                     else
-                        points.lastIndex
+                        0
             ].imageY
-            return CalculationSnapshot(polygon, intersections, minPoint, tmpPolygon, mainPolygon)//findSimpleVoronoiDiagram(tmpPolygon, res, polygon)
+            return CalculationSnapshot(
+                polygon,
+                intersections,
+                minPoint,
+                tmpPolygon,
+                mainPolygon
+            )
         }
 
-        fun findSimpleVoronoiDiagram(polygon: Polygon, previousList: MutableList<Point>, mainPolygon: Polygon): CalculationSnapshot?{//MutableList<Point> {
-            val tmpPolygon = Polygon()
-            val lines = mutableListOf<Line>()
+        private fun findBisectors(lines: List<Line>, points: List<Point>): MutableList<Line>? {
             val bisectors = mutableListOf<Line>()
-            val intersections = mutableListOf<Point?>()
-            val points = polygon.getPoints()
-                ?: return null
-            println("point: $points")
-            for (i in 0 until points.lastIndex)
-                lines.add(
-                    getLine(points[i], points[i + 1])
-                )
-            lines.add(
-                getLine(points.last(), points[0])
-            )
             bisectors.add(
                 getBisector(
                     lines.last(),
@@ -1589,7 +1547,7 @@ class Geometric {
                                 || (points[i].x == points[i - 1].x && points[i].y < points[i - 1].y),
                         (points[i].x != points[i + 1].x && points[i].x < points[i + 1].x)
                                 || (points[i].x == points[i + 1].x && points[i].y < points[i + 1].y)
-                    )!!
+                    ) ?: return null
                 )
             bisectors.add(
                 getBisector(
@@ -1599,71 +1557,33 @@ class Geometric {
                             || (points.last().x == points[lines.lastIndex - 1].x && points.last().y < points[lines.lastIndex - 1].y),
                     (points.last().x != points[0].x && points.last().x < points[0].x)
                             || (points.last().x == points[0].x && points.last().y < points[0].y)
-                )!!
+                ) ?: return null
             )
-            var intersection = getIntersection(
-                bisectors.last(),
-                bisectors[0]
-            )
-            intersection ?: return null
-            intersections += if (mainPolygon.isInside(intersection))
-                intersection
-            else
-                null
-            for (i in 1..bisectors.lastIndex) {
+            return bisectors
+        }
+
+        private fun findIntersections(bisectors: List<Line>, polygon: Polygon): MutableList<Point?> {
+            var intersection: Point?
+            val intersections = mutableListOf<Point?>()
+            for (i in 0 until bisectors.lastIndex) {
                 intersection = getIntersection(
-                    bisectors[i - 1],
-                    bisectors[i]
+                    bisectors[i],
+                    bisectors[i + 1]
                 )
-                intersection ?: return null
-                intersections += if (mainPolygon.isInside(intersection))
+                intersections += if (polygon.isInside(intersection))
                     intersection
                 else
                     null
             }
-            var minLength = Float.MAX_VALUE
-            var tmpLength: Float
-            var minPoint = Point(0f, 0f)
-            var minInd = 0
-            for (i in intersections.indices) {
-                if (intersections[i] != null) {
-                    tmpLength = lengthFromPointToLine(lines[i], intersections[i]!!)
-                    if (minLength > tmpLength) {
-                        minLength = tmpLength
-                        minPoint = intersections[i]!!
-                        minInd = i
-                    }
-                }
-            }
-            println("intersections: $intersections")
-            println("minInd = $minInd")
-            println("minPoint = $minPoint")
-            intersection = when (minInd) {
-                0 -> getIntersection(lines[minInd], lines[lines.lastIndex - 1])
-                1 -> getIntersection(lines[minInd], lines.last())
-                else -> getIntersection(lines[minInd], lines[minInd - 2])
-            }
-            intersection ?: return CalculationSnapshot(Polygon(), mutableListOf(), Point(0f, 0f), Polygon(), Polygon())
-            tmpPolygon.addNode(intersection)
-            if (minInd != 0) {
-                for (i in minInd + 1..points.lastIndex)
-                    tmpPolygon.addNode(points[i])
-                for (i in 0 until minInd - 1)
-                    tmpPolygon.addNode(points[i])
-            } else {
-                for (i in 1 until points.lastIndex)
-                    tmpPolygon.addNode(points[i])
-            }
-            previousList.add(minPoint)
-            /*previousList += points[minInd]
-            previousList +=
-                if (minInd != 0)
-                    points[minInd - 1]
-                else
-                    points.last()
-            println(tmpPolygon.getPoints())*/
-            //return findSimpleVoronoiDiagram(tmpPolygon, previousList, mainPolygon)
-            return CalculationSnapshot(tmpPolygon, intersections, minPoint, mainPolygon, mainPolygon)//findSimpleVoronoiDiagram(tmpPolygon, res, polygon)
+            intersection = getIntersection(
+                bisectors.last(),
+                bisectors.first()
+            )
+            intersections += if (polygon.isInside(intersection ?: Point(Float.MAX_VALUE, Float.MAX_VALUE)))
+                intersection
+            else
+                null
+            return intersections
         }
 
         fun lengthFromPointToLine(line: Line, point: Point) =
@@ -1672,5 +1592,46 @@ class Geometric {
                         sqrt(line.k.pow(2) + 1)
             else
                 abs(point.x - line.b)
+
+        fun areIntersected(pointA1: Point, pointA2: Point, pointB1: Point, pointB2: Point): Boolean {
+            val lineA = Line.getLine(pointA1, pointA2)
+            val lineB = Line.getLine(pointB1, pointB2)
+            val intersection = getIntersection(lineA, lineB) ?: return false
+            val maxAX = max(pointA1.x, pointA2.x)
+            val minAX = min(pointA1.x, pointA2.x)
+            val maxAY = max(pointA1.y, pointA2.y)
+            val minAY = min(pointA1.y, pointA2.y)
+            val maxBX = max(pointB1.x, pointB2.x)
+            val minBX = min(pointB1.x, pointB2.x)
+            val maxBY = max(pointB1.y, pointB2.y)
+            val minBY = min(pointB1.y, pointB2.y)
+            return intersection.x in minAX..maxAX
+                    && intersection.y in minAY..maxAY
+                    && intersection.x in minBX..maxBX
+                    && intersection.y in minBY..maxBY
+        }
+
+        private fun mirror(point: Point, line: Line): Point? {
+            line.k ?: return null
+            var result = point.copy()
+            val xPoint = Point(-line.b / line.k, 0f)
+            result -= xPoint
+            var x = result.x
+            var y = result.y
+            result.x = x * cos(-atan(line.k)) - y * sin(-atan(line.k))
+            result.y = x * sin(-atan(line.k)) + y * cos(-atan(line.k))
+            result.y *= -1f
+            x = result.x
+            y = result.y
+            result.x = x * cos(atan(line.k)) - y * sin(atan(line.k))
+            result.y = x * sin(atan(line.k)) + y * cos(atan(line.k))
+            result += xPoint
+            return result
+        }
+
+        private fun <T> error(value: T? = null): T? {
+            println("---------------------null---------------------")
+            return null
+        }
     }
 }

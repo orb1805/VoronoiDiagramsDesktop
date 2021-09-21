@@ -1,6 +1,7 @@
 package com.example.demo.app
 
 import com.example.demo.core.domain.CalculationSnapshot
+import com.example.demo.core.domain.Line
 import com.example.demo.core.domain.Trapezoid
 import com.example.demo.core.useCases.*
 import com.example.demo.view.MainView
@@ -9,6 +10,7 @@ import com.example.demo.core.domain.Point
 import domain.Polygon
 import tornadofx.*
 import java.io.File
+import kotlin.math.atan
 
 class AppController : Controller() {
 
@@ -20,16 +22,32 @@ class AppController : Controller() {
     var centers = mutableListOf<Point>()
     var snapshot: CalculationSnapshot? = CalculationSnapshot(Polygon(), mutableListOf(), Point(0f, 0f), Polygon(), Polygon())
 
+    val testPolygon = Polygon()
+
     fun nextStep() {
         mainView.root += mainView.button
         snapshot = Geometric.findSimpleVoronoiDiagram(
-            /*snapshot!!.polygon,
-            snapshot!!.previousList,*/
             snapshot!!.tmpPolygon,
             polygon
         )
         if (snapshot != null)
             centers += snapshot!!.center
+    }
+
+    fun testIntersection() {
+        testPolygon.addNode(Point(0f, 0f))
+        testPolygon.addNode(Point(100f, 0f))
+        testPolygon.addNode(Point(100f, 100f))
+        testPolygon.addNode(Point(0f, 100f))
+        val points = testPolygon.getPoints() ?: return
+        val line1 = Line.getLine(Point(100f, 100f), Point(50f, -50f))
+        val line2 = Line.getLine(Point(0f, 100f), Point(50f, -50f))
+        var count = 0
+        for (i in 0 until points.lastIndex)
+            if (Geometric.areIntersected(Point(100f, 100f), Point(50f, -50f), points[i], points[i + 1])
+                || Geometric.areIntersected(Point(0f, 100f), Point(50f, -50f), points[i], points[i + 1]))
+                    count++
+        println(count)
     }
 
     fun fill() {
@@ -67,27 +85,5 @@ class AppController : Controller() {
         //centers = Geometric.findSimpleVoronoiDiagram(polygon)
         snapshot = Geometric.findSimpleVoronoiDiagram(polygon, polygon)
         centers += snapshot!!.center
-    }
-
-    fun test() {
-        val parent = Node(2)
-        var node1 = Node(7)
-        var node2 = Node(6)
-        var node3 = Node(3)
-        var node4 = Node(2)
-        var node5 = Node(1)
-        var node6 = Node(4)
-        var node7 = Node(3)
-        var node8 = Node(4)
-        parent.addChild(node1)
-        parent.addChild(node2)
-        node1.addChild(node3)
-        node2.addChild(node4)
-        node2.addChild(node5)
-        node2.addChild(node6)
-        node3.addChild(node7)
-        node3.addChild(node8)
-        val treeTraveler = TreeTraveler(parent)
-        println(treeTraveler.fromLeavesToRootTravel())
     }
 }
