@@ -1,22 +1,14 @@
-package domain
+package com.example.demo.core.domain
 
-import com.example.demo.core.domain.Line
-import com.example.demo.core.domain.Point
-import com.example.demo.core.domain.Trapezoid
 import useCases.Type
 import kotlin.math.*
 
-open class Polygon() {
+open class Polygon {
 
-    private var points: MutableList<Point>
-    private var types: MutableList<Type>
-    private val k = mutableListOf<Float?>()
-    private val b = mutableListOf<Float?>()
-
-    init {
-        points = mutableListOf()
-        types = mutableListOf()
-    }
+    private var points: CircleList<Point> = mutableCircleListOf()
+    private var types: CircleList<Type> = mutableCircleListOf()
+    private val k = mutableCircleListOf<Float?>()
+    private val b = mutableCircleListOf<Float?>()
 
     open fun getPoints(): MutableList<Point>? {
         return if (points.size < 3)
@@ -38,7 +30,7 @@ open class Polygon() {
                 return
         if (points.size > 0) {
             k[k.lastIndex] =
-                getCoefficient(point, points.last())//(point.y - points.last().y) / (point.x - points.last().x)
+                getCoefficient(point, points.last())
             b[b.lastIndex] = if (k.last() != null)
                 point.y - k.last()!! * point.x
             else

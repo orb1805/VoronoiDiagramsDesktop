@@ -1,7 +1,5 @@
 package com.example.demo.core.useCases
 
-import domain.Polygon
-
 class Node<T> {
 
     private var parent: Node<T>?

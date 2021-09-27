@@ -1,7 +1,5 @@
 package com.example.demo.core.domain
 
-import domain.Polygon
-
 data class CalculationSnapshot (
     val polygon: Polygon,
     val centers: MutableList<Point?>,

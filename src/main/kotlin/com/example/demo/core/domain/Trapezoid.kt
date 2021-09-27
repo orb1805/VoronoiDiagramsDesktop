@@ -1,7 +1,5 @@
 package com.example.demo.core.domain
 
-import domain.Polygon
-
 open class Trapezoid
     (
     private var point1: Point,

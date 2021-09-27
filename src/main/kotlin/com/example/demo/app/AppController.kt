@@ -7,10 +7,9 @@ import com.example.demo.core.useCases.*
 import com.example.demo.view.MainView
 import com.google.gson.Gson
 import com.example.demo.core.domain.Point
-import domain.Polygon
+import com.example.demo.core.domain.Polygon
 import tornadofx.*
 import java.io.File
-import kotlin.math.atan
 
 class AppController : Controller() {
 
@@ -75,11 +74,12 @@ class AppController : Controller() {
     fun testDiagram() {
         val gson = Gson()
         val polygonPoints = gson.fromJson(File("Test6.json").readText(), FileFormat::class.java)
+        val scale = 1f
         for (i in 0..polygonPoints.x.lastIndex)
             polygon.addNode(
                 Point(
-                    polygonPoints.x[i],
-                    polygonPoints.y[i]
+                    scale * polygonPoints.x[i],
+                    scale * polygonPoints.y[i]
                 )
             )
         //centers = Geometric.findSimpleVoronoiDiagram(polygon)

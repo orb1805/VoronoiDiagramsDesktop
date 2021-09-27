@@ -1,8 +1,7 @@
 package com.example.demo.core.useCases
 
-import com.example.demo.app.main
 import com.example.demo.core.domain.*
-import domain.Polygon
+import com.example.demo.core.domain.Polygon
 import useCases.Type
 import kotlin.math.*
 
@@ -1440,7 +1439,7 @@ class Geometric {
             val res = mutableListOf<Point>()
             val lines = mutableListOf<Line>()
             val points = polygon.getPoints()
-                ?: return error()
+                ?: return error("1443")
             for (i in 0 until points.lastIndex)
                 lines.add(
                     getLine(points[i], points[i + 1])
@@ -1448,7 +1447,7 @@ class Geometric {
             lines.add(
                 getLine(points.last(), points[0])
             )
-            val bisectors = findBisectors(lines, points) ?: return error()
+            val bisectors = findBisectors(lines, points) ?: return error("1451")
             val intersections = findIntersections(bisectors, mainPolygon)
             var minLength = Float.MAX_VALUE
             var tmpLength: Float
@@ -1463,34 +1462,59 @@ class Geometric {
                         minInd = i
                     }
                 }
-            val newLineA: Point
-            val newLineB:Point
-            val intersection = when (minInd) {
+            val checkPointA: Point
+            val checkPointB:Point
+            val mirrorPointA: Point
+            val mirrorPointB:Point
+            var intersection = when (minInd) {
                 0 -> {
+                    checkPointA = points.first()
+                    checkPointB = points.second()
+                    mirrorPointA = points.last()
+                    mirrorPointB = points[
+                            if (points.size == 3)
+                                0
+                            else
+                                3
+                    ]
                     getIntersection(lines.last(), lines.second())
                 }
                 lines.lastIndex -> {
+                    checkPointA = points.last()
+                    checkPointB = points.first()
+                    mirrorPointA = points[points.lastIndex - 1]
+                    mirrorPointB = points.second()
                     getIntersection(lines.preLast(), lines.first())
                 }
                 else -> {
+                    checkPointA = points[minInd]
+                    checkPointB = points[minInd + 1]
+                    mirrorPointA = points[minInd - 1]
+                    mirrorPointB = points[
+                            if (minInd + 2 == points.size)
+                                0
+                            else
+                                minInd + 2
+                    ]
                     getIntersection(lines[minInd - 1], lines[minInd + 1])
                 }
             }
-            intersection ?: return error()
-            /*var countOfIntersections = 0
+            intersection ?: return error("1503")
+            var countOfIntersections = 0
             for (i in 0 until points.lastIndex)
-                 if (areIntersected(newLineA, intersection, points[i], points[i + 1])
-                     || areIntersected(newLineB, intersection, points[i], points[i + 1]))
+                 if (areIntersected(checkPointA, intersection, points[i], points[i + 1])
+                     || areIntersected(checkPointB, intersection, points[i], points[i + 1]))
                          countOfIntersections++
-            if (areIntersected(newLineA, intersection, points.last(), points.first())
-                || areIntersected(newLineB, intersection, points.last(), points.first()))
+            if (areIntersected(checkPointA, intersection, points.last(), points.first())
+                || areIntersected(checkPointB, intersection, points.last(), points.first()))
                     countOfIntersections++
             println("---------------$countOfIntersections---------------")
-            if (countOfIntersections == 7) {
+            if (countOfIntersections > 3) {
                 println(intersection)
-                intersection = mirror(intersection, lines[minInd - 1]) ?: intersection
+                println(Line.getLine(mirrorPointA, mirrorPointB))
+                intersection = mirror(intersection, Line.getLine(mirrorPointA, mirrorPointB)) ?: intersection
                 println(intersection)
-            }*/
+            }
             tmpPolygon.addNode(intersection)
             if (minInd != points.lastIndex) {
                 for (i in minInd + 2..points.lastIndex)
@@ -1629,8 +1653,8 @@ class Geometric {
             return result
         }
 
-        private fun <T> error(value: T? = null): T? {
-            println("---------------------null---------------------")
+        private fun <T> error(msg: String? = null, value: T? = null): T? {
+            println("---------------------$msg---------------------")
             return null
         }
     }
