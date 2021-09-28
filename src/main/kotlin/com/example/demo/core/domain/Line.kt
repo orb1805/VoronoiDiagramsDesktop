@@ -19,5 +19,6 @@ data class Line(val k: Float?, val b: Float) {
                     null,
                     point1.x
                 )
-        }    }
+        }
+    }
 }

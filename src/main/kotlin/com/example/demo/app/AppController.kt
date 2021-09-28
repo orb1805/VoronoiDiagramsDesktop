@@ -21,8 +21,6 @@ class AppController : Controller() {
     var centers = mutableListOf<Point>()
     var snapshot: CalculationSnapshot? = CalculationSnapshot(Polygon(), mutableListOf(), Point(0f, 0f), Polygon(), Polygon())
 
-    val testPolygon = Polygon()
-
     fun nextStep() {
         mainView.root += mainView.button
         snapshot = Geometric.findSimpleVoronoiDiagram(
@@ -31,22 +29,6 @@ class AppController : Controller() {
         )
         if (snapshot != null)
             centers += snapshot!!.center
-    }
-
-    fun testIntersection() {
-        testPolygon.addNode(Point(0f, 0f))
-        testPolygon.addNode(Point(100f, 0f))
-        testPolygon.addNode(Point(100f, 100f))
-        testPolygon.addNode(Point(0f, 100f))
-        val points = testPolygon.getPoints() ?: return
-        val line1 = Line.getLine(Point(100f, 100f), Point(50f, -50f))
-        val line2 = Line.getLine(Point(0f, 100f), Point(50f, -50f))
-        var count = 0
-        for (i in 0 until points.lastIndex)
-            if (Geometric.areIntersected(Point(100f, 100f), Point(50f, -50f), points[i], points[i + 1])
-                || Geometric.areIntersected(Point(0f, 100f), Point(50f, -50f), points[i], points[i + 1]))
-                    count++
-        println(count)
     }
 
     fun fill() {
@@ -73,7 +55,7 @@ class AppController : Controller() {
 
     fun testDiagram() {
         val gson = Gson()
-        val polygonPoints = gson.fromJson(File("Test6.json").readText(), FileFormat::class.java)
+        val polygonPoints = gson.fromJson(File("Test2.json").readText(), FileFormat::class.java)
         val scale = 1f
         for (i in 0..polygonPoints.x.lastIndex)
             polygon.addNode(

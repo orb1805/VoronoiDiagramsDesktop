@@ -60,19 +60,3 @@ fun javafx.scene.shape.Path.stretchedLine(point1: Point, point2: Point): javafx.
     moveTo(currentPoint.x, -currentPoint.y)
     return lineTo(point2)
 }
-
-fun <T> List<T>.preLast(): T {
-    if (isEmpty())
-        throw NoSuchElementException("List is empty.")
-    if (size == 1)
-        throw java.util.NoSuchElementException("List's size is 1")
-    return this[lastIndex - 1]
-}
-
-fun <T> List<T>.second(): T {
-    if (isEmpty())
-        throw NoSuchElementException("List is empty.")
-    if (size == 1)
-        throw java.util.NoSuchElementException("List's size is 1")
-    return this[1]
-}

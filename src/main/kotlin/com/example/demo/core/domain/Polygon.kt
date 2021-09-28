@@ -5,19 +5,19 @@ import kotlin.math.*
 
 open class Polygon {
 
-    private var points: CircleList<Point> = mutableCircleListOf()
-    private var types: CircleList<Type> = mutableCircleListOf()
-    private val k = mutableCircleListOf<Float?>()
-    private val b = mutableCircleListOf<Float?>()
+    private var points: CircledList<Point> = circledListOf()
+    private var types: CircledList<Type> = circledListOf()
+    private val k = circledListOf<Float?>()
+    private val b = circledListOf<Float?>()
 
-    open fun getPoints(): MutableList<Point>? {
+    open fun getPoints(): CircledList<Point>? {
         return if (points.size < 3)
             null
         else
-            points.toMutableList()
+            points.copy()
     }
 
-    fun getTypes(): MutableList<Type>? {
+    fun getTypes(): CircledList<Type>? {
         return if (types.size < 3)
             null
         else

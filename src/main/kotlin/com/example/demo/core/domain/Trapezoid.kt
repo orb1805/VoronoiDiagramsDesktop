@@ -111,11 +111,11 @@ open class Trapezoid
         }
     }
 
-    override fun getPoints(): MutableList<Point>? {
+    override fun getPoints(): CircledList<Point>? {
         return if (isTraingle)
-            mutableListOf(point1, point2, point3)
+            circledListOf(mutableListOf(point1, point2, point3))
         else
-            mutableListOf(point1, point2, point3, point4)
+            circledListOf(mutableListOf(point1, point2, point3, point4))
     }
 
     override fun contains(checkPoint: Point): Int {

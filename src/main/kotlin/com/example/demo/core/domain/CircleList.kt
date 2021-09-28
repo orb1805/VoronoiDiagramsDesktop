@@ -1,8 +1,9 @@
 package com.example.demo.core.domain
 
-class CircleList<T>(override var size: Int) : MutableList<T> {
-
-    private val list = mutableListOf<T>()
+class CircledList<T>(
+    override var size: Int = 0,
+    private val list: MutableList<T> = mutableListOf()
+) : MutableList<T> {
 
     override fun contains(element: T): Boolean =
         list.contains(element)
@@ -13,13 +14,16 @@ class CircleList<T>(override var size: Int) : MutableList<T> {
     override fun get(index: Int): T {
         val newIndex =
             when {
-                index > lastIndex -> index % lastIndex - 1
+                index > lastIndex -> index % lastIndex
                 index < 0 -> lastIndex + (index % lastIndex) + 1
                 else -> index
             }
-        println(index)
-        println(newIndex)
-        println()
+        if (index != newIndex) {
+            println(index)
+            println(newIndex)
+            println("size ${list.size}")
+            println()
+        }
         return list[newIndex]
     }
 
@@ -82,6 +86,14 @@ class CircleList<T>(override var size: Int) : MutableList<T> {
 
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> =
         list.subList(fromIndex, toIndex)
+
+    fun first(): T =
+        list.first()
+
+    fun last(): T =
+        list.last()
+
+    fun copy(): CircledList<T> = CircledList(list.size, list.toMutableList())
 }
 
-fun <T> mutableCircleListOf(): CircleList<T> = CircleList(0)
+fun <T> circledListOf(list: MutableList<T> = mutableListOf()): CircledList<T> = CircledList(list.size, list)
