@@ -1,7 +1,9 @@
 package com.example.demo.core.domain
 
+import com.example.demo.core.useCases.Geometric
 import tornadofx.lineTo
 import tornadofx.moveTo
+import kotlin.math.*
 
 fun javafx.scene.shape.Path.lineTo(point: Point): javafx.scene.shape.Path {
     return this.lineTo(point.x, -point.y)
@@ -59,4 +61,94 @@ fun javafx.scene.shape.Path.stretchedLine(point1: Point, point2: Point): javafx.
     }
     moveTo(currentPoint.x, -currentPoint.y)
     return lineTo(point2)
+}
+
+fun javafx.scene.shape.Path.drawAxes(): javafx.scene.shape.Path {
+    moveTo(0f, -100f)
+    lineTo(0f, 0f)
+    return lineTo(100f, 0f)
+}
+
+fun javafx.scene.shape.Path.drawParabola(parabola: Parabola): javafx.scene.shape.Path {
+    var leftPoint1 = Point(parabola.startX, 10f)
+    var leftPoint2 = Point(parabola.startX, -10f)
+    var rightPoint1 = Point(parabola.endX, 10f)
+    var rightPoint2 = Point(parabola.endX, -10f)
+    moveTo(leftPoint1)
+    lineTo(leftPoint2)
+    moveTo(rightPoint1)
+    lineTo(rightPoint2)
+    val center = Geometric.centerOfPerpendicular(parabola.directrix, parabola.focus)!!
+    leftPoint1 -= center
+    leftPoint2 -= center
+    rightPoint1 -= center
+    rightPoint2 -= center
+    leftPoint1.rotate(-atan(parabola.directrix.k ?: PI.toFloat() / 2f))
+    leftPoint2.rotate(-atan(parabola.directrix.k ?: PI.toFloat() / 2f))
+    rightPoint1.rotate(-atan(parabola.directrix.k ?: PI.toFloat() / 2f))
+    rightPoint2.rotate(-atan(parabola.directrix.k ?: PI.toFloat() / 2f))
+    drawCross(parabola.focus)
+    val p = Geometric.lengthFromPointToLine(parabola.directrix, parabola.focus) / 2f
+    //var x = parabola.startX
+    val leftLine = Line.getLine(leftPoint1, leftPoint2)
+    val rightLine = Line.getLine(rightPoint1, rightPoint2)
+    val startX: Float?
+    val endX: Float?
+    var d: Float
+    if (leftLine.k != null) {
+        d = leftLine.k.pow(2) + 4 * leftLine.b / p
+        startX = when {
+            d == 0f ->
+                p * leftLine.k / 2f
+            d < 0f ->
+                null
+            else -> {
+                val x1 = p * (leftLine.k + sqrt(d)) / 2f
+                val x2 = p * (leftLine.k - sqrt(d)) / 2f
+                if (x1 < x2)
+                    x1
+                else
+                    x2
+            }
+        }
+    } else
+        startX = leftLine.b
+    if (rightLine.k != null) {
+        d = rightLine.k.pow(2) + 4 * rightLine.b / p
+        endX = when {
+            d == 0f ->
+                p * rightLine.k / 2f
+            d < 0f ->
+                null
+            else -> {
+                val x1 = p * (rightLine.k + sqrt(d)) / 2f
+                val x2 = p * (rightLine.k - sqrt(d)) / 2f
+                if (x1 < x2)
+                    x1
+                else
+                    x2
+            }
+        }
+    } else
+        endX = rightLine.b
+    var newPoint = Point(startX!!, startX.pow(2) / p)
+    var x = startX
+    newPoint.rotate(atan(parabola.directrix.k ?: PI.toFloat() / 2f))
+    newPoint += center
+    drawCross(center)
+    moveTo(newPoint)
+    while (x < endX!!) {
+        x += 0.1f
+        newPoint = Point(x, x.pow(2) / p)
+        newPoint.rotate(atan(parabola.directrix.k ?: PI.toFloat() / 2f))
+        newPoint += center
+        lineTo(newPoint)
+    }
+    return if (parabola.directrix.k == null) {
+        moveTo(0f, 0f)
+        lineTo(0f, -100f)
+    } else {
+        moveTo(0f, -parabola.directrix.b)
+        lineTo(100f, -parabola.directrix.k * 100f - parabola.directrix.b)
+    }
 }

@@ -14,8 +14,9 @@ class CircledList<T>(
     override fun get(index: Int): T {
         val newIndex =
             when {
-                index > lastIndex -> index % lastIndex
-                index < 0 -> lastIndex + (index % lastIndex) + 1
+                index == list.size -> 0
+                index > list.lastIndex -> index % list.lastIndex
+                index < 0 -> list.lastIndex + (index % list.lastIndex) + 1
                 else -> index
             }
         if (index != newIndex) {

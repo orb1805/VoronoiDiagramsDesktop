@@ -27,9 +27,8 @@ class MainView : View("Voronoi diagram") {
                     root += view
                 appController.nextStep()
                 root += drawPreResult(appController)
-            } else {
+            } else
                 root += drawResult(appController) ?: return@action
-            }
         }
     }
 
@@ -54,6 +53,10 @@ class MainView : View("Voronoi diagram") {
     private fun drawSnapshot(appController: AppController): HBox =
         hbox {
             val points = appController.snapshot!!.polygon.getPoints() ?: return@hbox
+            var averagePoint = Point(0f, 0f)
+            for (point in points)
+                averagePoint += point
+            averagePoint /= points.size
             val mainPoints = appController.snapshot!!.mainPolygon.getPoints() ?: return@hbox
             val centers = appController.snapshot!!.centers
             val center = appController.snapshot!!.center

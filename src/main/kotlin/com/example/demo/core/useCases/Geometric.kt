@@ -1426,11 +1426,11 @@ class Geometric {
             val res = circledListOf<Point>()
             val lines = circledListOf<Line>()
             val points = polygon.getPoints()
-                ?: return error("1443")
+                ?: return error("1429")
             for (i in 0 until points.lastIndex)
                 lines += Line.getLine(points[i], points[i + 1])
             lines += Line.getLine(points.last(), points[0])
-            val bisectors = findBisectors(lines, points) ?: return error("1451")
+            val bisectors = findBisectors(lines, points) ?: return error("1433")
             val intersections = findIntersections(bisectors, mainPolygon)
             var minLength = Float.MAX_VALUE
             var tmpLength: Float
@@ -1450,7 +1450,7 @@ class Geometric {
             val mirrorPointA: Point = points[minInd - 1]
             val mirrorPointB: Point = points[minInd + 2]
             var intersection = getIntersection(lines[minInd - 1], lines[minInd + 1])
-            intersection ?: return error("1470")
+            intersection ?: return error("1453")
             var countOfIntersections = 0
             for (i in 0 until points.lastIndex)
                 if (
@@ -1551,7 +1551,32 @@ class Geometric {
             else
                 abs(point.x - line.b)
 
-        fun areIntersected(pointA1: Point, pointA2: Point, pointB1: Point, pointB2: Point): Boolean {
+        fun centerOfPerpendicular(line: Line, point: Point): Point? {
+            val a: Float
+            val b: Float
+            when (line.k) {
+                null -> {
+                    a = 1f
+                    b = 0f
+                }
+                0f -> {
+                    a = 0f
+                    b = 1f
+                }
+                else -> {
+                    a = -line.k
+                    b = 1f
+                }
+            }
+            val newLine = if (a != 0f)
+                Line(b / a, point.y - b / a * point.x)
+            else
+                Line(null, point.x)
+            val intersection = getIntersection(line, newLine) ?: return null
+            return (point + intersection) / 2f//Point((point.x + intersection.x) / 2f, (point.y + intersection.y) / 2f)
+        }
+
+        private fun areIntersected(pointA1: Point, pointA2: Point, pointB1: Point, pointB2: Point): Boolean {
             val lineA = Line.getLine(pointA1, pointA2)
             val lineB = Line.getLine(pointB1, pointB2)
             val intersection = getIntersection(lineA, lineB) ?: return false
@@ -1570,6 +1595,7 @@ class Geometric {
         }
 
         private fun mirror(point: Point, line: Line): Point? {
+            //заменить поворт на метод
             line.k ?: return null
             var result = point.copy()
             val xPoint = Point(-line.b / line.k, 0f)
