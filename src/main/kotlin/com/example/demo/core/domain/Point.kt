@@ -1,11 +1,8 @@
 package com.example.demo.core.domain
 
-import kotlin.math.abs
-import kotlin.math.atan
-import kotlin.math.cos
-import kotlin.math.sin
+import kotlin.math.*
 
-data class Point(var x: Float = 0f, var y: Float = 0f) {
+open class Point(var x: Float = 0f, var y: Float = 0f) {
 
     var imageX = x
     var imageY = y
@@ -15,12 +12,25 @@ data class Point(var x: Float = 0f, var y: Float = 0f) {
     var parent2X = x
     var parent2Y = y
 
+    val module: Float
+        get() = sqrt(x.pow(2) + y.pow(2))
+
     fun rotate(angle: Float) {
         val x = this.x
         val y = this.y
         this.x = x * cos(angle) - y * sin(angle)
         this.y = x * sin(angle) + y * cos(angle)
     }
+
+    fun normalize() {
+        x /= module
+        y /= module
+    }
+
+    fun lengthToPoint(point: Point): Float =
+        sqrt((x - point.x).pow(2) + (y - point.y).pow(2))
+
+    fun copy(): Point = Point(x, y)
 
     override fun equals(other: Any?): Boolean {
         val point = other as Point
@@ -45,6 +55,8 @@ data class Point(var x: Float = 0f, var y: Float = 0f) {
 
     operator fun times(a: Float): Point =
         Point(x * a, y * a)
+
+    override fun toString(): String = "($x, $y)"
 
     override fun hashCode(): Int {
         var result = x.hashCode()

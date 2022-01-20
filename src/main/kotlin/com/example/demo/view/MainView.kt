@@ -9,12 +9,13 @@ import tornadofx.*
 import tornadofx.lineTo
 import useCases.Type
 import kotlin.math.abs
+import com.example.demo.core.domain.VertexLineImage.Perpendiculars as Perpendiculars
 
 class MainView : View("Voronoi diagram") {
 
     private val appController: AppController by inject()
     private val views = mutableListOf<HBox>()
-    override var root = hbox { }
+    override var root = testFullDiagram(appController)
     private var flag = true
     val button = Button("NEXT").apply {
         action {
@@ -32,13 +33,83 @@ class MainView : View("Voronoi diagram") {
         }
     }
 
-    init {
+    /*init {
         root += button
-    }
+    }*/
+
+    fun testFullDiagram(appController: AppController) : HBox =
+        hbox {
+            path {
+                val result = appController.result ?: return@path
+                val points = appController.polygon.points ?: return@path
+                moveTo(points.first())
+                for (i in 1 .. points.lastIndex)
+                    lineTo(points[i])
+                lineTo(points.first())
+                result.forEach {
+                    if (it is Point)
+                        drawCross(it)
+                    else
+                        drawParabola(it as Parabola)
+                }
+            }
+        }
+
+    fun testPerpendiculars(appController: AppController): HBox =
+        hbox {
+            path {
+                val points = appController.polygon.points ?: return@path
+                moveTo(points.first())
+                for (i in 1 .. points.lastIndex)
+                    lineTo(points[i])
+                lineTo(points.first())
+                val images = appController.images
+                for (i in points.indices) {
+                    if (images[i] is Line) {
+                        moveTo(points[i])
+                        if ((images[i] as Line).k != null)
+                            lineTo(
+                                points[i].x + 30f,
+                                -((images[i] as Line).k!! * (points[i].x + 30f) + (images[i] as Line).b)
+                            )
+                        else
+                            lineTo(points[i].x, -points[i].y - 30f)
+                    } else {
+                        val perpendicular1 = (images[i] as Perpendiculars).line1
+                        val perpendicular2 = (images[i] as Perpendiculars).line2
+                        if (perpendicular1.k != null)
+                            moveTo(points[i].x + 30f, -(perpendicular1.k!! * (points[i].x + 30f) + perpendicular1.b))
+                        else
+                            moveTo(points[i].x, -points[i].y - 30f)
+                        lineTo(points[i])
+                        if (perpendicular2.k != null)
+                            lineTo(points[i].x + 30f, -(perpendicular2.k!! * (points[i].x + 30f) + perpendicular2.b))
+                        else
+                            lineTo(points[i].x, -points[i].y - 30f)
+                    }
+                }
+            }
+        }
+
+    fun testParabola(appController: AppController): HBox =
+        hbox {
+            path {
+                drawAxes()
+                drawParabola(appController.parabola)
+                val k = -1f
+                val b = 160f
+                moveTo(-100f, -(k * (-100f) + b))
+                lineTo(100f, -(k * 100f + b))
+                val intersections = appController.parabola.intersection(Line(k, b))
+                intersections.forEach {
+                    drawFlake(it)
+                }
+            }
+        }
 
     private fun drawPreResult(appController: AppController): HBox =
         hbox {
-            val points = appController.polygon.getPoints() ?: return@hbox
+            val points = appController.polygon.points ?: return@hbox
             val centers = appController.centers.subList(0, appController.centers.size - 2)
             path {
                 moveTo(points[0].x, -points[0].y)
@@ -52,12 +123,12 @@ class MainView : View("Voronoi diagram") {
 
     private fun drawSnapshot(appController: AppController): HBox =
         hbox {
-            val points = appController.snapshot!!.polygon.getPoints() ?: return@hbox
+            val points = appController.snapshot!!.polygon.points ?: return@hbox
             var averagePoint = Point(0f, 0f)
             for (point in points)
                 averagePoint += point
             averagePoint /= points.size
-            val mainPoints = appController.snapshot!!.mainPolygon.getPoints() ?: return@hbox
+            val mainPoints = appController.snapshot!!.mainPolygon.points ?: return@hbox
             val centers = appController.snapshot!!.centers
             val center = appController.snapshot!!.center
             path {
@@ -93,7 +164,7 @@ class MainView : View("Voronoi diagram") {
         if (flag)
             hbox {
                 flag = false
-                val points = appController.polygon.getPoints() ?: return@hbox
+                val points = appController.polygon.points ?: return@hbox
                 path {
                     moveTo(points.first())
                     for (i in 1..points.lastIndex)
@@ -115,7 +186,7 @@ class MainView : View("Voronoi diagram") {
         return vbox {
             hbox {
                 path {
-                    val points = appController.polygon.getPoints()
+                    val points = appController.polygon.points
                     if (points != null) {
                         moveTo(points[0].x, -points[0].y)
                         for (i in 1..points.lastIndex)
@@ -124,7 +195,7 @@ class MainView : View("Voronoi diagram") {
                     closepath()
                 }
                 path {
-                    val points = appController.polygon.getPoints()
+                    val points = appController.polygon.points
                     if (points != null) {
                         moveTo(points[0].x, -points[0].y)
                         for (i in 1..points.lastIndex)
@@ -157,7 +228,7 @@ class MainView : View("Voronoi diagram") {
                 val trapezoids = appController.trapezoids
                 val medialAxes = appController.medialAxes
                 for (trapezoidInd in trapezoids.indices) {
-                    val points = trapezoids[trapezoidInd].getPoints()
+                    val points = trapezoids[trapezoidInd].points
                     val isReal = trapezoids[trapezoidInd].isReal
                     if (points != null) {
                         path {
@@ -225,7 +296,7 @@ class MainView : View("Voronoi diagram") {
 
     private fun drawSimpleDiagram(appController: AppController): HBox {
         return hbox {
-            val points = appController.polygon.getPoints()
+            val points = appController.polygon.points
             val centers = appController.centers
             if (points != null) {
                 path {
@@ -250,7 +321,7 @@ class MainView : View("Voronoi diagram") {
             Point(
                 point.x + 10f,
                 if (line.k != null)
-                    (point.x + 10f) * line.k + line.b
+                    (point.x + 10f) * line.k!! + line.b
                 else
                     point.y + 10f
             )

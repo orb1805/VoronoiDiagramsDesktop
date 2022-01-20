@@ -11,22 +11,8 @@ class CircledList<T>(
     override fun containsAll(elements: Collection<T>): Boolean =
         list.containsAll(elements)
 
-    override fun get(index: Int): T {
-        val newIndex =
-            when {
-                index == list.size -> 0
-                index > list.lastIndex -> index % list.lastIndex
-                index < 0 -> list.lastIndex + (index % list.lastIndex) + 1
-                else -> index
-            }
-        if (index != newIndex) {
-            println(index)
-            println(newIndex)
-            println("size ${list.size}")
-            println()
-        }
-        return list[newIndex]
-    }
+    override fun get(index: Int): T =
+        list[getRightIndex(index)]
 
     override fun indexOf(element: T): Int =
         list.indexOf(element)
@@ -75,14 +61,14 @@ class CircledList<T>(
         .also { this.size = list.size }
 
     override fun removeAt(index: Int): T = list
-        .removeAt(index)
+        .removeAt(getRightIndex(index))
         .also { this.size = list.size }
 
     override fun retainAll(elements: Collection<T>): Boolean =
         list.retainAll(elements)
 
     override fun set(index: Int, element: T): T = list
-        .set(index, element)
+        .set(getRightIndex(index), element)
         .also { this.size = list.size }
 
     override fun subList(fromIndex: Int, toIndex: Int): MutableList<T> =
@@ -94,7 +80,24 @@ class CircledList<T>(
     fun last(): T =
         list.last()
 
+    fun preLast(): T =
+        list[lastIndex - 1]
+
     fun copy(): CircledList<T> = CircledList(list.size, list.toMutableList())
+
+    fun forEach(action: (Int, T) -> Unit): Unit {
+        for (i in this.indices)
+            action(i, this[i])
+    }
+
+    private fun getRightIndex(index: Int): Int = when {
+        index == list.size -> 0
+        index > list.lastIndex -> index % list.lastIndex
+        index < 0 -> list.lastIndex + (index % list.lastIndex) + 1
+        else -> index
+    }
 }
 
 fun <T> circledListOf(list: MutableList<T> = mutableListOf()): CircledList<T> = CircledList(list.size, list)
+
+fun <E> MutableList<E>.toCircledList() = circledListOf(this)

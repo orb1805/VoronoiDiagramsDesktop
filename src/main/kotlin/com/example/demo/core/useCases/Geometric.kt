@@ -3,21 +3,26 @@ package com.example.demo.core.useCases
 import com.example.demo.core.domain.*
 import com.example.demo.core.domain.Polygon
 import useCases.Type
+import java.lang.Exception
 import kotlin.math.*
+import com.example.demo.core.domain.VertexLineImage.Bisector as Bisector
+import com.example.demo.core.domain.VertexLineImage.Perpendiculars as Perpendiculars
 
 class Geometric {
     companion object {
 
-        fun trapezoidateToList(polygon: Polygon): MutableList<Trapezoid> {
+        /*fun trapezoidateToList(polygon: Polygon): MutableList<Trapezoid> {
             val trapezoids = mutableListOf<Polygon>()
-            var points = polygon.getPoints()
+            var points = polygon.points
             val types = polygon.getTypes()
             if (points != null && types != null) {
                 if (points.size > 3) {
-                    /**construct edge list**/
+                    */
+        /**construct edge list**//*
                     val edgeList = constructEdgeList(points)
 
-                    /**build intersections**/
+                    */
+        /**build intersections**//*
                     val intersections = mutableMapOf<Int, MutableList<Intersection?>>()
                     var coefs: List<Float>?
                     for (i in 0..types.lastIndex)
@@ -142,7 +147,8 @@ class Geometric {
                                     }
                                 }
                         }
-                    /**intersections from map to list**/
+                    */
+        /**intersections from map to list**//*
                     var length1: Int
                     var length2: Int
                     var polygon: Polygon
@@ -156,7 +162,8 @@ class Geometric {
                             inters.add(j!!)
                         }
                     }
-                    /**delete same intersections**/
+                    */
+        /**delete same intersections**//*
                     var listToDelete = mutableListOf<Int>()
                     for (i in 0 until inters.lastIndex) {
                         for (j in i + 1..inters.lastIndex) {
@@ -172,7 +179,8 @@ class Geometric {
                     }
                     for (i in listToDelete.lastIndex downTo 0)
                         inters.removeAt(listToDelete[i])
-                    /**delete intersections thar are equal to sections of polygon**/
+                    */
+        /**delete intersections thar are equal to sections of polygon**//*
                     listToDelete = mutableListOf()
                     for (i in inters.indices) {
                         for (j in 0 until points.lastIndex)
@@ -195,7 +203,8 @@ class Geometric {
                     }
                     for (i in listToDelete.lastIndex downTo 0)
                         inters.removeAt(listToDelete[i])
-                    /**sort intersections by y**/
+                    */
+        /**sort intersections by y**//*
                     var tmpInter: Intersection
                     for (i in 0 until inters.lastIndex)
                         for (j in i + 1..inters.lastIndex)
@@ -204,7 +213,8 @@ class Geometric {
                                 inters[i] = inters[j]
                                 inters[j] = tmpInter
                             }
-                    /**build trapezoids**/
+                    */
+        /**build trapezoids**//*
                     val deletionController = mutableListOf<Int>()
                     for (i in 0 until types.lastIndex)
                         if (types[i] == Type.WIDE) {
@@ -355,14 +365,14 @@ class Geometric {
             }
             val result = mutableListOf<Trapezoid>()
             var tmp: Trapezoid?
-            points = polygon.getPoints()
+            points = polygon.points
             if (points != null) {
                 for (i in trapezoids.indices) {
                     tmp = trapezoids[i].toTrapezoid(i)
                     if (tmp != null) {
                         //region Check if edge of trapezoid is real
                         val isReal = mutableListOf<Boolean>()
-                        val tmpoints = tmp.getPoints()
+                        val tmpoints = tmp.points
                         for (j in 0 until tmpoints!!.lastIndex) {
                             isReal.add(false)
                             for (k in 0 until points.lastIndex)
@@ -393,14 +403,14 @@ class Geometric {
                             )
                         )
                             isReal[isReal.lastIndex] = true
-                        tmp.isReal = isReal
+                        tmp.isReal = isReal.toCircledList()
                         //endregion
                         result.add(tmp)
                     }
                 }
             }
             return result
-        }
+        }*/
 
         private fun constructEdgeList(points: MutableList<Point>): MutableList<MutableList<Int>> {
             val tmp = mutableListOf<Float>()
@@ -548,46 +558,28 @@ class Geometric {
                 false
         }
 
-        private fun getPerpendicular(line: Line, point: Point): Line {
-            return if (line.k != null) {
-                if (line.k != 0f) {
-                    Line(
-                        -1f / line.k,
-                        point.y + point.x / line.k
-                    )
-                } else
-                    Line(
-                        null,
-                        point.x
-                    )
-            } else
-                Line(
-                    0f,
-                    point.y
-                )
-        }
-
-        private fun getBisector(line1: Line, line2: Line, isPlusA: Boolean, isPlusB: Boolean): Line? {
-            val point = getIntersection(line1, line2)
+        //?????????????????????????????
+        private fun getBisector(line1: Line, line2: Line, isPlusA: Boolean, isPlusB: Boolean, point: Point): Bisector? {
+            val point = line1.intersection(line2)
             return if (point != null) {
-                val pointA: Point// = point1 - point2
-                val pointB: Point// = point3 - point2
+                val pointA: Point
+                val pointB: Point
                 when {
                     line1.k != null && line2.k != null -> {
                         pointA = if (isPlusA)
-                            Point(point.x + 10f, line1.k * (point.x + 10f) + line1.b) - point
+                            Point(point.x + 10f, line1.k!! * (point.x + 10f) + line1.b) - point
                         else
-                            Point(point.x - 10f, line1.k * (point.x - 10f) + line1.b) - point
+                            Point(point.x - 10f, line1.k!! * (point.x - 10f) + line1.b) - point
                         pointB = if (isPlusB)
-                            Point(point.x + 10f, line2.k * (point.x + 10f) + line2.b) - point
+                            Point(point.x + 10f, line2.k!! * (point.x + 10f) + line2.b) - point
                         else
-                            Point(point.x - 10f, line2.k * (point.x - 10f) + line2.b) - point
+                            Point(point.x - 10f, line2.k!! * (point.x - 10f) + line2.b) - point
                     }
                     line1.k != null && line2.k == null -> {
                         pointA = if (isPlusA)
-                            Point(point.x + 10f, line1.k * (point.x + 10f) + line1.b) - point
+                            Point(point.x + 10f, line1.k!! * (point.x + 10f) + line1.b) - point
                         else
-                            Point(point.x - 10f, line1.k * (point.x - 10f) + line1.b) - point
+                            Point(point.x - 10f, line1.k!! * (point.x - 10f) + line1.b) - point
                         pointB = if (isPlusB)
                             Point(line2.b, 10f)
                         else
@@ -595,9 +587,9 @@ class Geometric {
                     }
                     line1.k == null && line2.k != null -> {
                         pointB = if (isPlusB)
-                            Point(point.x + 10f, line2.k * (point.x + 10f) + line2.b) - point
+                            Point(point.x + 10f, line2.k!! * (point.x + 10f) + line2.b) - point
                         else
-                            Point(point.x - 10f, line2.k * (point.x - 10f) + line2.b) - point
+                            Point(point.x - 10f, line2.k!! * (point.x - 10f) + line2.b) - point
                         pointA = if (isPlusA)
                             Point(line1.b, 10f)
                         else
@@ -619,38 +611,10 @@ class Geometric {
                 val ortA = pointA / lenA
                 val ortB = pointB / lenB
                 val finalPoint = ortA + ortB + point
-                Line.getLine(point, finalPoint)
+                val line = Line.getLine(point, finalPoint)
+                Bisector(line.k, line.b, line1, line2, point)
             } else
                 null
-        }
-
-        private fun getIntersection(line1: Line, line2: Line): Point? {
-            return when {
-                line1.k != null && line2.k != null -> {
-                    if (abs(line1.k - line2.k) < 0.0001f)
-                        null
-                    else {
-                        val x = -(line1.b - line2.b) / (line1.k - line2.k)
-                        Point(
-                            x,
-                            line1.k * x + line1.b
-                        )
-                    }
-                }
-                line1.k != null && line2.k == null -> {
-                    Point(
-                        line2.b,
-                        line1.k * line2.b + line1.b
-                    )
-                }
-                line1.k == null && line2.k != null -> {
-                    Point(
-                        line1.b,
-                        line2.k * line1.b + line2.b
-                    )
-                }
-                else -> null
-            }
         }
 
         fun buildMedialAxes(trapezoid: Trapezoid): MutableList<Point> {
@@ -664,7 +628,7 @@ class Geometric {
             val perpendicular1: Line
             val perpendicular2: Line
             val bisector: Line?
-            val points = trapezoid.getPoints()
+            val points = trapezoid.points
             val intersection1: Point?
             val intersection2: Point?
             val len1: Float
@@ -672,34 +636,34 @@ class Geometric {
             return if (points != null) {
                 when {
                     !trapezoid.isReal[0] -> {
-                        perpendicular1 = getPerpendicular(
+                        perpendicular1 = Line.getPerpendicular(
                             Line.getLine(points[2], points[0]),
                             points[0]
                         )
-                        perpendicular2 = getPerpendicular(
+                        perpendicular2 = Line.getPerpendicular(
                             Line.getLine(points[2], points[1]),
                             points[1]
                         )
                         bisector = when {
-                            points[2].x < points[1].x && points[2].x < points[0].x -> getBisector(
+                            points[2].x < points[1].x && points[2].x < points[0].x -> Line.getBisector(
                                 Line.getLine(points[2], points[1]),
                                 Line.getLine(points[2], points[0]),
                                 true,
                                 true
                             )
-                            points[2].x >= points[1].x && points[2].x <= points[0].x -> getBisector(
+                            points[2].x >= points[1].x && points[2].x <= points[0].x -> Line.getBisector(
                                 Line.getLine(points[2], points[1]),
                                 Line.getLine(points[2], points[0]),
                                 false,
                                 true
                             )
-                            points[2].x <= points[1].x && points[2].x >= points[0].x -> getBisector(
+                            points[2].x <= points[1].x && points[2].x >= points[0].x -> Line.getBisector(
                                 Line.getLine(points[2], points[1]),
                                 Line.getLine(points[2], points[0]),
                                 true,
                                 false
                             )
-                            else -> getBisector(
+                            else -> Line.getBisector(
                                 Line.getLine(points[2], points[1]),
                                 Line.getLine(points[2], points[0]),
                                 false,
@@ -709,15 +673,15 @@ class Geometric {
                         if (bisector == null)
                             mutableListOf()
                         else {
-                            intersection1 = getIntersection(bisector, perpendicular1)
-                            intersection2 = getIntersection(bisector, perpendicular2)
+                            intersection1 = bisector.intersection(perpendicular1)
+                            intersection2 = bisector.intersection(perpendicular2)
                             println("$intersection1 $intersection2")
                             len1 = if (intersection1 != null)
-                                length(points[1], intersection1)
+                                points[1].lengthToPoint(intersection1)
                             else
                                 -1f
                             len2 = if (intersection2 != null)
-                                length(points[1], intersection2)
+                                points[1].lengthToPoint(intersection2)
                             else
                                 -1f
                             when {
@@ -737,34 +701,34 @@ class Geometric {
                         }
                     }
                     !trapezoid.isReal[1] -> {
-                        perpendicular1 = getPerpendicular(
+                        perpendicular1 = Line.getPerpendicular(
                             Line.getLine(points[0], points[1]),
                             points[1]
                         )
-                        perpendicular2 = getPerpendicular(
+                        perpendicular2 = Line.getPerpendicular(
                             Line.getLine(points[0], points[2]),
                             points[2]
                         )
                         bisector = when {
-                            points[0].x < points[2].x && points[0].x < points[1].x -> getBisector(
+                            points[0].x < points[2].x && points[0].x < points[1].x -> Line.getBisector(
                                 Line.getLine(points[0], points[2]),
                                 Line.getLine(points[0], points[1]),
                                 true,
                                 true
                             )
-                            points[0].x >= points[2].x && points[0].x <= points[1].x -> getBisector(
+                            points[0].x >= points[2].x && points[0].x <= points[1].x -> Line.getBisector(
                                 Line.getLine(points[0], points[2]),
                                 Line.getLine(points[0], points[1]),
                                 false,
                                 true
                             )
-                            points[0].x <= points[2].x && points[0].x >= points[1].x -> getBisector(
+                            points[0].x <= points[2].x && points[0].x >= points[1].x -> Line.getBisector(
                                 Line.getLine(points[2], points[1]),
                                 Line.getLine(points[2], points[0]),
                                 true,
                                 false
                             )
-                            else -> getBisector(
+                            else -> Line.getBisector(
                                 Line.getLine(points[0], points[2]),
                                 Line.getLine(points[0], points[1]),
                                 false,
@@ -774,15 +738,15 @@ class Geometric {
                         if (bisector == null)
                             mutableListOf()
                         else {
-                            intersection1 = getIntersection(bisector, perpendicular1)
-                            intersection2 = getIntersection(bisector, perpendicular2)
+                            intersection1 = bisector.intersection(perpendicular1)
+                            intersection2 = bisector.intersection(perpendicular2)
                             println("$intersection1 $intersection2")
                             len1 = if (intersection1 != null)
-                                length(points[0], intersection1)
+                                points[0].lengthToPoint(intersection1)
                             else
                                 -1f
                             len2 = if (intersection2 != null)
-                                length(points[0], intersection2)
+                                points[0].lengthToPoint(intersection2)
                             else
                                 -1f
                             when {
@@ -802,34 +766,34 @@ class Geometric {
                         }
                     }
                     !trapezoid.isReal[2] -> {
-                        perpendicular1 = getPerpendicular(
+                        perpendicular1 = Line.getPerpendicular(
                             Line.getLine(points[1], points[2]),
                             points[2]
                         )
-                        perpendicular2 = getPerpendicular(
+                        perpendicular2 = Line.getPerpendicular(
                             Line.getLine(points[1], points[0]),
                             points[0]
                         )
                         bisector = when {
-                            points[1].x < points[2].x && points[1].x < points[0].x -> getBisector(
+                            points[1].x < points[2].x && points[1].x < points[0].x -> Line.getBisector(
                                 Line.getLine(points[1], points[2]),
                                 Line.getLine(points[1], points[0]),
                                 true,
                                 true
                             )
-                            points[1].x >= points[2].x && points[1].x <= points[0].x -> getBisector(
+                            points[1].x >= points[2].x && points[1].x <= points[0].x -> Line.getBisector(
                                 Line.getLine(points[1], points[2]),
                                 Line.getLine(points[1], points[0]),
                                 false,
                                 true
                             )
-                            points[1].x <= points[2].x && points[1].x >= points[0].x -> getBisector(
+                            points[1].x <= points[2].x && points[1].x >= points[0].x -> Line.getBisector(
                                 Line.getLine(points[1], points[2]),
                                 Line.getLine(points[1], points[0]),
                                 true,
                                 false
                             )
-                            else -> getBisector(
+                            else -> Line.getBisector(
                                 Line.getLine(points[1], points[2]),
                                 Line.getLine(points[1], points[0]),
                                 false,
@@ -843,15 +807,15 @@ class Geometric {
                         if (bisector == null)
                             mutableListOf()
                         else {
-                            intersection1 = getIntersection(bisector, perpendicular1)
-                            intersection2 = getIntersection(bisector, perpendicular2)
+                            intersection1 = bisector.intersection(perpendicular1)
+                            intersection2 = bisector.intersection(perpendicular2)
                             println("$intersection1 $intersection2")
                             len1 = if (intersection1 != null)
-                                length(points[1], intersection1)
+                                points[1].lengthToPoint(intersection1)
                             else
                                 -1f
                             len2 = if (intersection2 != null)
-                                length(points[1], intersection2)
+                                points[1].lengthToPoint(intersection2)
                             else
                                 -1f
                             when {
@@ -877,7 +841,7 @@ class Geometric {
         }
 
         private fun findMedialAxesInTrapezoid(trapezoid: Trapezoid): MutableList<Point> {
-            val points = trapezoid.getPoints()
+            val points = trapezoid.points
             return if (points != null) {
                 if (countOfReal(trapezoid) == 2) {
                     val perpendicular1: Line
@@ -898,19 +862,19 @@ class Geometric {
                     val len4: Float
                     when {
                         !trapezoid.isReal[0] -> {
-                            perpendicular1 = getPerpendicular(
+                            perpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[0], points[3]),
                                 points[0]
                             )
-                            perpendicular2 = getPerpendicular(
+                            perpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[1], points[2]),
                                 points[1]
                             )
-                            perpendicular3 = getPerpendicular(
+                            perpendicular3 = Line.getPerpendicular(
                                 Line.getLine(points[2], points[1]),
                                 points[2]
                             )
-                            perpendicular4 = getPerpendicular(
+                            perpendicular4 = Line.getPerpendicular(
                                 Line.getLine(points[3], points[0]),
                                 points[3]
                             )
@@ -922,23 +886,23 @@ class Geometric {
                                 (points[3].x + points[2].x) / 2f,
                                 points[3].y
                             )
-                            phantomPerpendicular1 = getPerpendicular(
+                            phantomPerpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[0], tmp1),
                                 tmp1
                             )
-                            phantomPerpendicular2 = getPerpendicular(
+                            phantomPerpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[3], tmp2),
                                 tmp2
                             )
-                            intersection1 = getIntersection(perpendicular1, phantomPerpendicular1)
-                            intersection2 = getIntersection(perpendicular2, phantomPerpendicular1)
-                            intersection3 = getIntersection(perpendicular3, phantomPerpendicular2)
-                            intersection4 = getIntersection(perpendicular4, phantomPerpendicular2)
+                            intersection1 = perpendicular1.intersection(phantomPerpendicular1)
+                            intersection2 = perpendicular2.intersection(phantomPerpendicular1)
+                            intersection3 = perpendicular3.intersection(phantomPerpendicular2)
+                            intersection4 = perpendicular4.intersection(phantomPerpendicular2)
                             val res = mutableListOf<Point>()
                             when {
                                 intersection1 != null && intersection2 != null -> {
-                                    len1 = length(intersection1, tmp1)
-                                    len2 = length(intersection2, tmp1)
+                                    len1 = intersection1.lengthToPoint(tmp1)
+                                    len2 = intersection2.lengthToPoint(tmp1)
                                     if (len1 < len2)
                                         res.add(intersection1)
                                     else
@@ -949,8 +913,8 @@ class Geometric {
                             }
                             when {
                                 intersection3 != null && intersection4 != null -> {
-                                    len3 = length(intersection3, tmp2)
-                                    len4 = length(intersection4, tmp2)
+                                    len3 = intersection3.lengthToPoint(tmp2)
+                                    len4 = intersection4.lengthToPoint(tmp2)
                                     if (len3 < len4)
                                         res.add(intersection3)
                                     else
@@ -962,19 +926,19 @@ class Geometric {
                             res
                         }
                         !trapezoid.isReal[1] -> {
-                            perpendicular1 = getPerpendicular(
+                            perpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[1], points[0]),
                                 points[1]
                             )
-                            perpendicular2 = getPerpendicular(
+                            perpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[2], points[3]),
                                 points[2]
                             )
-                            perpendicular3 = getPerpendicular(
+                            perpendicular3 = Line.getPerpendicular(
                                 Line.getLine(points[3], points[2]),
                                 points[3]
                             )
-                            perpendicular4 = getPerpendicular(
+                            perpendicular4 = Line.getPerpendicular(
                                 Line.getLine(points[0], points[1]),
                                 points[0]
                             )
@@ -986,23 +950,23 @@ class Geometric {
                                 (points[0].x + points[3].x) / 2f,
                                 points[0].y
                             )
-                            phantomPerpendicular1 = getPerpendicular(
+                            phantomPerpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[1], tmp1),
                                 tmp1
                             )
-                            phantomPerpendicular2 = getPerpendicular(
+                            phantomPerpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[3], tmp2),
                                 tmp2
                             )
-                            intersection1 = getIntersection(perpendicular1, phantomPerpendicular1)
-                            intersection2 = getIntersection(perpendicular2, phantomPerpendicular1)
-                            intersection3 = getIntersection(perpendicular3, phantomPerpendicular2)
-                            intersection4 = getIntersection(perpendicular4, phantomPerpendicular2)
+                            intersection1 = perpendicular1.intersection(phantomPerpendicular1)
+                            intersection2 = perpendicular2.intersection(phantomPerpendicular1)
+                            intersection3 = perpendicular3.intersection(phantomPerpendicular2)
+                            intersection4 = perpendicular4.intersection(phantomPerpendicular2)
                             val res = mutableListOf<Point>()
                             when {
                                 intersection1 != null && intersection2 != null -> {
-                                    len1 = length(intersection1, tmp1)
-                                    len2 = length(intersection2, tmp1)
+                                    len1 = intersection1.lengthToPoint(tmp1)
+                                    len2 = intersection2.lengthToPoint(tmp1)
                                     if (len1 < len2)
                                         res.add(intersection1)
                                     else
@@ -1013,8 +977,8 @@ class Geometric {
                             }
                             when {
                                 intersection3 != null && intersection4 != null -> {
-                                    len3 = length(intersection3, tmp2)
-                                    len4 = length(intersection4, tmp2)
+                                    len3 = intersection3.lengthToPoint(tmp2)
+                                    len4 = intersection4.lengthToPoint(tmp2)
                                     if (len3 < len4)
                                         res.add(intersection3)
                                     else
@@ -1046,38 +1010,38 @@ class Geometric {
                     val len3: Float
                     when {
                         !trapezoid.isReal[0] -> {
-                            perpendicular1 = getPerpendicular(
+                            perpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[0], points[3]),
                                 points[0]
                             )
-                            perpendicular2 = getPerpendicular(
+                            perpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[1], points[2]),
                                 points[1]
                             )
                             bisector1 = when {
                                 points[2].x <= points[1].x && points[2].x <= points[3].x ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[2], points[1]),
                                         Line.getLine(points[2], points[3]),
                                         true,
                                         true
                                     )
                                 points[2].x >= points[1].x && points[2].x <= points[3].x ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[2], points[1]),
                                         Line.getLine(points[2], points[3]),
                                         false,
                                         true
                                     )
                                 points[2].x <= points[1].x && points[2].x >= points[3].x ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[2], points[1]),
                                         Line.getLine(points[2], points[3]),
                                         true,
                                         false
                                     )
                                 else ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[2], points[1]),
                                         Line.getLine(points[2], points[3]),
                                         false,
@@ -1086,28 +1050,28 @@ class Geometric {
                             }
                             bisector2 = when {
                                 points[3].x <= points[2].x && points[3].x <= points[0].x ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[3], points[2]),
                                         Line.getLine(points[3], points[0]),
                                         true,
                                         true
                                     )
                                 points[3].x >= points[2].x && points[3].x <= points[0].x ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[3], points[2]),
                                         Line.getLine(points[3], points[0]),
                                         false,
                                         true
                                     )
                                 points[3].x <= points[2].x && points[3].x >= points[0].x ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[3], points[2]),
                                         Line.getLine(points[3], points[0]),
                                         true,
                                         false
                                     )
                                 else ->
-                                    getBisector(
+                                    Line.getBisector(
                                         Line.getLine(points[3], points[2]),
                                         Line.getLine(points[3], points[0]),
                                         false,
@@ -1118,47 +1082,41 @@ class Geometric {
                                 (points[1].x + points[0].x) / 2f,
                                 points[1].y
                             )
-                            phantomPerpendicular = getPerpendicular(
+                            phantomPerpendicular = Line.getPerpendicular(
                                 Line.getLine(points[1], tmp),
                                 tmp
                             )
                             val res = mutableListOf<Point>()
                             if (bisector1 != null && bisector2 != null) {
-                                intersection1 = getIntersection(
-                                    bisector1,
-                                    bisector2
-                                )
+                                intersection1 = bisector1.intersection(bisector2)
                                 if (intersection1 != null) {
                                     res.add(intersection1)
-                                    tmpIntersection = getIntersection(
-                                        Line.getLine(points[1], points[2]),
-                                        Line.getLine(points[0], points[3])
-                                    )
+                                    tmpIntersection = Line.getLine(points[1], points[2]).intersection(Line.getLine(points[0], points[3]))
                                     if (tmpIntersection != null) {
                                         phantomBisector = when {
                                             tmpIntersection.x <= points[1].x && tmpIntersection.x <= points[0].x ->
-                                                getBisector(
+                                                Line.getBisector(
                                                     Line.getLine(tmpIntersection, points[1]),
                                                     Line.getLine(tmpIntersection, points[0]),
                                                     true,
                                                     true
                                                 )
                                             tmpIntersection.x >= points[1].x && tmpIntersection.x <= points[0].x ->
-                                                getBisector(
+                                                Line.getBisector(
                                                     Line.getLine(tmpIntersection, points[1]),
                                                     Line.getLine(tmpIntersection, points[0]),
                                                     false,
                                                     true
                                                 )
                                             tmpIntersection.x <= points[1].x && tmpIntersection.x >= points[0].x ->
-                                                getBisector(
+                                                Line.getBisector(
                                                     Line.getLine(tmpIntersection, points[1]),
                                                     Line.getLine(tmpIntersection, points[0]),
                                                     true,
                                                     false
                                                 )
                                             else ->
-                                                getBisector(
+                                                Line.getBisector(
                                                     Line.getLine(tmpIntersection, points[1]),
                                                     Line.getLine(tmpIntersection, points[0]),
                                                     false,
@@ -1166,30 +1124,21 @@ class Geometric {
                                                 )
                                         }
                                         if (phantomBisector != null) {
-                                            intersection2 = getIntersection(
-                                                phantomBisector,
-                                                perpendicular1
-                                            )
-                                            intersection3 = getIntersection(
-                                                phantomBisector,
-                                                perpendicular2
-                                            )
-                                            intersection4 = getIntersection(
-                                                phantomBisector,
-                                                phantomPerpendicular
-                                            )
+                                            intersection2 = phantomBisector.intersection(perpendicular1)
+                                            intersection3 = phantomBisector.intersection(perpendicular2)
+                                            intersection4 = phantomBisector.intersection(phantomPerpendicular)
                                             len1 = if (intersection2 == null)
                                                 Float.MAX_VALUE
                                             else
-                                                length(intersection2, tmp)
+                                                intersection2.lengthToPoint(tmp)
                                             len2 = if (intersection3 == null)
                                                 Float.MAX_VALUE
                                             else
-                                                length(intersection3, tmp)
+                                                intersection3.lengthToPoint(tmp)
                                             len3 = if (intersection4 == null)
                                                 Float.MAX_VALUE
                                             else
-                                                length(intersection4, tmp)
+                                                intersection4.lengthToPoint(tmp)
                                             when {
                                                 len1 <= len2 && len1 <= len3 && len1 != Float.MAX_VALUE -> res.add(
                                                     intersection2!!
@@ -1208,17 +1157,17 @@ class Geometric {
                             res
                         }
                         !trapezoid.isReal[2] -> {
-                            perpendicular1 = getPerpendicular(
+                            perpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[1], points[2]),
                                 points[2]
                             )
-                            perpendicular2 = getPerpendicular(
+                            perpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[0], points[3]),
                                 points[3]
                             )
                             var isPlusA = points[0].x <= points[3].x
                             var isPlusB = points[0].x <= points[1].x
-                            bisector1 = getBisector(
+                            bisector1 = Line.getBisector(
                                 Line.getLine(points[0], points[3]),
                                 Line.getLine(points[0], points[1]),
                                 isPlusA,
@@ -1226,7 +1175,7 @@ class Geometric {
                             )
                             isPlusA = points[1].x <= points[0].x
                             isPlusB = points[1].x <= points[2].x
-                            bisector2 = getBisector(
+                            bisector2 = Line.getBisector(
                                 Line.getLine(points[1], points[0]),
                                 Line.getLine(points[1], points[2]),
                                 isPlusA,
@@ -1236,56 +1185,32 @@ class Geometric {
                                 (points[3].x + points[2].x) / 2f,
                                 points[3].y
                             )
-                            phantomPerpendicular = getPerpendicular(
+                            phantomPerpendicular = Line.getPerpendicular(
                                 Line.getLine(points[2], tmp),
                                 tmp
                             )
                             val res = mutableListOf<Point>()
                             if (bisector1 != null && bisector2 != null) {
-                                intersection1 = getIntersection(
-                                    bisector1,
-                                    bisector2
-                                )
+                                intersection1 = bisector1.intersection(bisector2)
                                 if (intersection1 != null) {
                                     res.add(intersection1)
-                                    tmpIntersection = getIntersection(
-                                        Line.getLine(points[0], points[3]),
-                                        Line.getLine(points[1], points[2])
-                                    )
+                                    tmpIntersection = Line.getLine(points[0], points[3]).intersection(Line.getLine(points[1], points[2]))
                                     if (tmpIntersection != null) {
                                         isPlusA = tmpIntersection.x <= points[3].x
                                         isPlusB = tmpIntersection.x <= points[2].x
-                                        phantomBisector = getBisector(
+                                        phantomBisector = Line.getBisector(
                                             Line.getLine(tmpIntersection, points[3]),
                                             Line.getLine(tmpIntersection, points[2]),
                                             isPlusA,
                                             isPlusB
                                         )
                                         if (phantomBisector != null) {
-                                            intersection2 = getIntersection(
-                                                phantomBisector,
-                                                perpendicular1
-                                            )
-                                            intersection3 = getIntersection(
-                                                phantomBisector,
-                                                perpendicular2
-                                            )
-                                            intersection4 = getIntersection(
-                                                phantomBisector,
-                                                phantomPerpendicular
-                                            )
-                                            len1 = if (intersection2 == null)
-                                                Float.MAX_VALUE
-                                            else
-                                                length(intersection2, tmp)
-                                            len2 = if (intersection3 == null)
-                                                Float.MAX_VALUE
-                                            else
-                                                length(intersection3, tmp)
-                                            len3 = if (intersection4 == null)
-                                                Float.MAX_VALUE
-                                            else
-                                                length(intersection4, tmp)
+                                            intersection2 = phantomBisector.intersection(perpendicular1)
+                                            intersection3 = phantomBisector.intersection(perpendicular2)
+                                            intersection4 = phantomBisector.intersection(phantomPerpendicular)
+                                            len1 = intersection2?.lengthToPoint(tmp) ?: Float.MAX_VALUE
+                                            len2 = intersection3?.lengthToPoint(tmp) ?: Float.MAX_VALUE
+                                            len3 = intersection4?.lengthToPoint(tmp) ?: Float.MAX_VALUE
                                             when {
                                                 len1 <= len2 && len1 <= len3 && len1 != Float.MAX_VALUE -> res.add(
                                                     intersection2!!
@@ -1304,17 +1229,17 @@ class Geometric {
                             res
                         }
                         !trapezoid.isReal[3] -> {
-                            perpendicular1 = getPerpendicular(
+                            perpendicular1 = Line.getPerpendicular(
                                 Line.getLine(points[3], points[2]),
                                 points[3]
                             )
-                            perpendicular2 = getPerpendicular(
+                            perpendicular2 = Line.getPerpendicular(
                                 Line.getLine(points[0], points[1]),
                                 points[0]
                             )
                             var isPlusA = points[1].x <= points[0].x
                             var isPlusB = points[1].x <= points[2].x
-                            bisector1 = getBisector(
+                            bisector1 = Line.getBisector(
                                 Line.getLine(points[1], points[0]),
                                 Line.getLine(points[1], points[2]),
                                 isPlusA,
@@ -1322,7 +1247,7 @@ class Geometric {
                             )
                             isPlusA = points[2].x <= points[1].x
                             isPlusB = points[2].x <= points[3].x
-                            bisector2 = getBisector(
+                            bisector2 = Line.getBisector(
                                 Line.getLine(points[2], points[1]),
                                 Line.getLine(points[2], points[3]),
                                 isPlusA,
@@ -1332,56 +1257,32 @@ class Geometric {
                                 (points[3].x + points[0].x) / 2f,
                                 points[0].y
                             )
-                            phantomPerpendicular = getPerpendicular(
+                            phantomPerpendicular = Line.getPerpendicular(
                                 Line.getLine(points[0], tmp),
                                 tmp
                             )
                             val res = mutableListOf<Point>()
                             if (bisector1 != null && bisector2 != null) {
-                                intersection1 = getIntersection(
-                                    bisector1,
-                                    bisector2
-                                )
+                                intersection1 = bisector1.intersection(bisector2)
                                 if (intersection1 != null) {
                                     res.add(intersection1)
-                                    tmpIntersection = getIntersection(
-                                        Line.getLine(points[0], points[1]),
-                                        Line.getLine(points[3], points[2])
-                                    )
+                                    tmpIntersection = Line.getLine(points[0], points[1]).intersection(Line.getLine(points[3], points[2]))
                                     if (tmpIntersection != null) {
                                         isPlusA = tmpIntersection.x <= points[0].x
                                         isPlusB = tmpIntersection.x <= points[3].x
-                                        phantomBisector = getBisector(
+                                        phantomBisector = Line.getBisector(
                                             Line.getLine(tmpIntersection, points[0]),
                                             Line.getLine(tmpIntersection, points[3]),
                                             isPlusA,
                                             isPlusB
                                         )
                                         if (phantomBisector != null) {
-                                            intersection2 = getIntersection(
-                                                phantomBisector,
-                                                perpendicular1
-                                            )
-                                            intersection3 = getIntersection(
-                                                phantomBisector,
-                                                perpendicular2
-                                            )
-                                            intersection4 = getIntersection(
-                                                phantomBisector,
-                                                phantomPerpendicular
-                                            )
-                                            len1 = if (intersection2 == null)
-                                                Float.MAX_VALUE
-                                            else
-                                                length(intersection2, tmp)
-                                            len2 = if (intersection3 == null)
-                                                Float.MAX_VALUE
-                                            else
-                                                length(intersection3, tmp)
-                                            len3 = if (intersection4 == null)
-                                                Float.MAX_VALUE
-                                            else
-                                                length(intersection4, tmp)
+                                            intersection2 = phantomBisector.intersection(perpendicular1)
+                                            intersection3 = phantomBisector.intersection(perpendicular2)
+                                            intersection4 = phantomBisector.intersection(phantomPerpendicular)
+                                            len1 = intersection2?.lengthToPoint(tmp) ?: Float.MAX_VALUE
+                                            len2 = intersection3?.lengthToPoint(tmp) ?: Float.MAX_VALUE
+                                            len3 = intersection4?.lengthToPoint(tmp) ?: Float.MAX_VALUE
                                             when {
                                                 len1 <= len2 && len1 <= len3 && len1 != Float.MAX_VALUE -> res.add(
                                                     intersection2!!
@@ -1406,9 +1307,6 @@ class Geometric {
                 mutableListOf()
         }
 
-        private fun length(point1: Point, point2: Point): Float =
-            sqrt((point1.x - point2.x).pow(2) + (point1.y - point2.y).pow(2))
-
         private fun countOfReal(trapezoid: Trapezoid): Int {
             var count = 0
             val isReal = trapezoid.isReal
@@ -1424,13 +1322,11 @@ class Geometric {
         ): CalculationSnapshot? {
             val tmpPolygon = Polygon()
             val res = circledListOf<Point>()
-            val lines = circledListOf<Line>()
-            val points = polygon.getPoints()
+            val lines = polygon.lines ?: return error("1488")
+            val points = polygon.points
                 ?: return error("1429")
-            for (i in 0 until points.lastIndex)
-                lines += Line.getLine(points[i], points[i + 1])
-            lines += Line.getLine(points.last(), points[0])
-            val bisectors = findBisectors(lines, points) ?: return error("1433")
+
+            val bisectors = findBisectors(lines) ?: return error("1433")
             val intersections = findIntersections(bisectors, mainPolygon)
             var minLength = Float.MAX_VALUE
             var tmpLength: Float
@@ -1449,7 +1345,7 @@ class Geometric {
             val checkPointB: Point = points[minInd + 1]
             val mirrorPointA: Point = points[minInd - 1]
             val mirrorPointB: Point = points[minInd + 2]
-            var intersection = getIntersection(lines[minInd - 1], lines[minInd + 1])
+            var intersection = lines[minInd - 1].intersection(lines[minInd + 1])
             intersection ?: return error("1453")
             var countOfIntersections = 0
             for (i in 0 until points.lastIndex)
@@ -1464,7 +1360,8 @@ class Geometric {
             )
                 countOfIntersections++
             if (countOfIntersections > 3)
-                intersection = mirror(intersection, Line.getLine(mirrorPointA, mirrorPointB)) ?: intersection
+                intersection =
+                    mirror(intersection, Line.getLine(mirrorPointA, mirrorPointB)) ?: intersection
             tmpPolygon.addNode(intersection)
             if (minInd != points.lastIndex) {
                 for (i in minInd + 2..points.lastIndex)
@@ -1474,8 +1371,8 @@ class Geometric {
             } else
                 for (i in 1 until minInd)
                     tmpPolygon += points[i]
-            tmpPolygon.getPoints()?.first()?.imageX = minPoint.x
-            tmpPolygon.getPoints()?.first()?.imageY = minPoint.y
+            tmpPolygon.points?.first()?.imageX = minPoint.x
+            tmpPolygon.points?.first()?.imageY = minPoint.y
             res.add(minPoint)
             minPoint.parent1X = points[minInd].imageX
             minPoint.parent1Y = points[minInd].imageY
@@ -1490,96 +1387,261 @@ class Geometric {
             )
         }
 
-        private fun findBisectors(lines: List<Line>, points: List<Point>): MutableList<Line>? {
-            val bisectors = mutableListOf<Line>()
-            bisectors += getBisector(
-                lines.last(),
-                lines[0],
-                (points[0].x != points.last().x && points[0].x < points.last().x)
-                        || (points[0].x == points.last().x && points[0].y < points.last().y),
-                (points[0].x != points[1].x && points[0].x < points[1].x)
-                        || (points[0].x == points[1].x && points[0].y < points[1].y)
-            ) ?: return null
-            for (i in 1 until lines.lastIndex)
-                bisectors += getBisector(
+        fun findVoronoiDiagram(
+            polygon: Polygon
+        ): CircledList<MedialAxesPart>? {
+            val result = circledListOf<MedialAxesPart>()
+            val lines = polygon.lines ?: return error("1558")
+            val points = polygon.points ?: return error("1559")
+            var pointsLeft = points.size - 2
+            // находим биссектрисы и перпедикуляры первый раз
+            val insideImages = findImages(lines, points) ?: return error("1560")
+            var intersections: CircledList<Point?>
+            while (pointsLeft > 0) {
+                // находим точки пересечения биссектрис, перепендикуляров и парабол
+                intersections = findIntersectionsForImages(insideImages, polygon)
+                var minLength = Float.MAX_VALUE
+                var tmpLength: Float
+                var minInd = 0
+                // находим точку пересечесния, которая находится ближе всего к стороне
+                intersections.forEach { i, intersection ->
+                    if (intersection != null) {
+                        tmpLength = lengthFromPointToLine(lines[i], intersection)
+                        if (minLength > tmpLength) {
+                            minLength = tmpLength
+                            minInd = i
+                        }
+                    }
+                }
+                // находим элемент срединной линии
+                result += when {
+                    // для пересечения биссектрисы и перпендикуляра
+                    insideImages[minInd] is Bisector && insideImages[minInd + 1] is Perpendiculars -> {
+                        // берем левый (по часовой стрелке) отрезок, на котором образована биссектриса
+                        val line = (insideImages[minInd] as Bisector).baseLine1
+                        // строим параболу с директрисой на этом отрезке и фокусом в точке, из которой выпущены перпендикуляры
+                        val parabola = Parabola(/*points[minInd]*/(insideImages[minInd + 1] as Perpendiculars).point, line)
+                        // заменяем биссектрису на часть параболы
+                        insideImages[minInd] = VertexLineImage.ParabolaImage(parabola, insideImages[minInd + 1].point)
+                        // увеличиваем количество использованых перпендикуляров
+                        (insideImages[minInd + 1] as Perpendiculars).line1Used()
+                        // возвращаем параболу как часть срединной линии
+                        MedialAxesPart.ParabolaPart(parabola)
+                    }
+                    // для пересечения перпендикуляра и биссектрисы
+                    insideImages[minInd] is Perpendiculars && insideImages[minInd + 1] is Bisector -> {
+                        val line = (insideImages[minInd + 1] as Bisector).baseLine2
+                        val parabola = Parabola(/*points[minInd]*/(insideImages[minInd] as Perpendiculars).point, line)
+                        insideImages[minInd + 1] = VertexLineImage.ParabolaImage(parabola, insideImages[minInd].point)
+                        (insideImages[minInd] as Perpendiculars).line2Used()
+                        MedialAxesPart.ParabolaPart(parabola)
+                    }
+                    // для пересечения двух перпендикуляров
+                    insideImages[minInd] is Perpendiculars && insideImages[minInd + 1] is Perpendiculars -> {
+                        /*-------------------------------------------------------
+                        MedialAxesPart.PointPart(Point())
+                        ------------------------------------------------------------*/
+                        return error("1431")
+                    }
+                    // для пересечения биссектрисы и параболы
+                    insideImages[minInd] is Bisector && insideImages[minInd + 1] is Parabola -> {
+                        val line = (insideImages[minInd] as Bisector).baseLine1
+                        val point = (insideImages[minInd + 1] as Parabola).focus
+                        val parabola = Parabola(point, line)
+                        MedialAxesPart.ParabolaPart(parabola)
+                    }
+                    // для пересечения параболы и биссектрисы
+                    insideImages[minInd] is Parabola && insideImages[minInd + 1] is Bisector -> {
+                        val line = (insideImages[minInd + 1] as Bisector).baseLine2
+                        val point = (insideImages[minInd] as Parabola).focus
+                        val parabola = Parabola(point, line)
+                        MedialAxesPart.ParabolaPart(parabola)
+                    }
+                    // для пересечения перпендикуляра и параболы
+                    insideImages[minInd] is Perpendiculars && insideImages[minInd + 1] is Parabola -> {
+                        val perpendiculars = insideImages[minInd] as Perpendiculars
+                        val parabola = insideImages[minInd + 1] as Parabola
+                        /*if (perpendiculars.line2IsUsed)*/ return error()
+                    }
+                    // для пересечения параболы и перпендикуляра
+                    insideImages[minInd] is Parabola && insideImages[minInd + 1] is Perpendiculars ->{
+                        val perpendiculars = insideImages[minInd + 1] as Perpendiculars
+                        val parabola = insideImages[minInd] as Parabola
+                        if (!perpendiculars.line2IsUsed) {
+                            perpendiculars.line2Used()
+                            insideImages.removeAt(minInd + 1)
+                            //insideImages[minInd] =
+                        }
+                        return error()
+                    }
+                    // для пересечения параболы и параболы
+                    insideImages[minInd] is Parabola && insideImages[minInd + 1] is Parabola -> {
+                        return error()
+                    }
+                    // для пересечения двух биссектрис
+                    else -> {
+                        val intersection = lines[minInd - 1].intersection(lines[minInd + 1]) ?: return error("1524")
+                        insideImages[minInd] = Bisector(
+                            Line.getBisector(
+                                lines[minInd - 1],
+                                lines[minInd + 1],
+                                lines[minInd - 1].isPlusRight,
+                                lines[minInd + 1].isPlusLeft
+                            ) ?: return null,
+                            lines[minInd - 1],
+                            lines[minInd + 1],
+                            intersection
+                        )
+                        insideImages.removeAt(minInd + 1)
+                        MedialAxesPart.PointPart(intersections[minInd]!!)
+                    }
+                }
+                pointsLeft--
+            }
+            return result
+        }
+
+        private fun findBisectors(lines: List<Polygon.PolygonLine>): CircledList<Line>? {
+            val bisectors = circledListOf<Line>()
+            for (i in lines.indices)
+                bisectors += Line.getBisector(
                     lines[i - 1],
                     lines[i],
-                    (points[i].x != points[i - 1].x && points[i].x < points[i - 1].x)
-                            || (points[i].x == points[i - 1].x && points[i].y < points[i - 1].y),
-                    (points[i].x != points[i + 1].x && points[i].x < points[i + 1].x)
-                            || (points[i].x == points[i + 1].x && points[i].y < points[i + 1].y)
+                    lines[i - 1].isPlusRight,
+                    lines[i].isPlusLeft
                 ) ?: return null
-            bisectors += getBisector(
-                lines[lines.lastIndex - 1],
-                lines.last(),
-                (points.last().x != points[lines.lastIndex - 1].x && points.last().x < points[lines.lastIndex - 1].x)
-                        || (points.last().x == points[lines.lastIndex - 1].x && points.last().y < points[lines.lastIndex - 1].y),
-                (points.last().x != points[0].x && points.last().x < points[0].x)
-                        || (points.last().x == points[0].x && points.last().y < points[0].y)
-            ) ?: return null
             return bisectors
         }
 
-        private fun findIntersections(bisectors: List<Line>, polygon: Polygon): MutableList<Point?> {
+        fun findImages(lines: List<Line>, points: List<Point>): CircledList<VertexLineImage>? {
+            val result = circledListOf<VertexLineImage>()
+            var isPlusA: Boolean
+            var isPlusB: Boolean
+            for (i in lines.indices)
+                if (!isAngleReflex(points[i - 1], points[i], points[i + 1])) {
+                    isPlusA = (points[i].x != points[i - 1].x && points[i].x < points[i - 1].x)
+                            || (points[i].x == points[i - 1].x && points[i].y < points[i - 1].y)
+                    isPlusB = (points[i].x != points[i + 1].x && points[i].x < points[i + 1].x)
+                            || (points[i].x == points[i + 1].x && points[i].y < points[i + 1].y)
+                    result += getBisector(
+                        lines[i - 1],
+                        lines[i],
+                        isPlusA,
+                        isPlusB,
+                        points[i]
+                    ) ?: return null
+                } else
+                    result += Perpendiculars(
+                        Line.getPerpendicular(lines[i - 1], points[i]),
+                        Line.getPerpendicular(lines[i], points[i]),
+                        points[i]
+                    )
+            return result
+        }
+
+        private fun findIntersections(bisectors: List<Line>, polygon: Polygon): CircledList<Point?> {
             var intersection: Point?
-            val intersections = mutableListOf<Point?>()
-            for (i in 0 until bisectors.lastIndex) {
-                intersection = getIntersection(
-                    bisectors[i],
-                    bisectors[i + 1]
-                )
+            val intersections = circledListOf<Point?>()
+            for (i in bisectors.indices) {
+                intersection = bisectors[i].intersection(bisectors[i + 1])
                 intersections += if (polygon.isInside(intersection))
                     intersection
                 else
                     null
             }
-            intersection = getIntersection(
-                bisectors.last(),
-                bisectors.first()
-            )
-            intersections += if (polygon.isInside(intersection ?: Point(Float.MAX_VALUE, Float.MAX_VALUE)))
-                intersection
-            else
-                null
+            return intersections
+        }
+
+        private fun findIntersectionsForImages(images: List<VertexLineImage>, polygon: Polygon): CircledList<Point?> {
+            var intersection: Point?
+            val intersections = circledListOf<Point?>()
+            for (i in images.indices) {
+                if (images[i] !is Parabola && images[i + 1] !is Parabola) {
+                    val line1: Line
+                    val line2: Line
+                    when {
+                        images[i] is Line && images[i + 1] is Line -> {
+                            line1 = images[i] as Line
+                            line2 = images[i + 1] as Line
+                        }
+                        images[i] is Line && images[i + 1] is Perpendiculars -> {
+                            if ((images[i + 1] as Perpendiculars).line1IsUsed)
+                                continue
+                            line1 = images[i] as Line
+                            line2 = (images[i + 1] as Perpendiculars).line1
+                        }
+                        images[i] is Perpendiculars && images[i + 1] is Line -> {
+                            if ((images[i] as Perpendiculars).line1IsUsed)
+                                continue
+                            line1 = (images[i] as Perpendiculars).line2
+                            line2 = images[i + 1] as Line
+                        }
+                        else -> {
+                            if ((images[i] as Perpendiculars).line1IsUsed || (images[i + 1] as Perpendiculars).line1IsUsed)
+                                continue
+                            line1 = (images[i] as Perpendiculars).line2
+                            line2 = (images[i + 1] as Perpendiculars).line1
+                        }
+                    }
+                    intersection = line1.intersection(line2)
+                    intersections += if (polygon.isInside(intersection))
+                        intersection
+                    else
+                        null
+                } else {
+                    when {
+                        images[i] is Parabola && images[i + 1] is Line -> {
+                            val parabola = images[i] as Parabola
+                            val line = images[i + 1] as Line
+                            intersections += parabola.intersection(line)
+                        }
+                        images[i] is Parabola && images[i + 1] is Perpendiculars -> {
+                            val parabola = images[i] as Parabola
+                            val line = (images[i + 1] as Perpendiculars).line1
+                            intersections += parabola.intersection(line)
+                        }
+                        images[i] is Line && images[i + 1] is Parabola -> {
+                            val parabola = images[i + 1] as Parabola
+                            val line = images[i] as Line
+                            intersections += parabola.intersection(line)
+                        }
+                        images[i] is Perpendiculars && images[i + 1] is Parabola -> {
+                            val parabola = images[i + 1] as Parabola
+                            val line = (images[i] as Perpendiculars).line2
+                            intersections += parabola.intersection(line)
+                        }
+                        else -> {
+                            val parabola1 = images[i] as VertexLineImage.ParabolaImage
+                            val parabola2 = images[i + 1] as VertexLineImage.ParabolaImage
+                            val approximationX = (parabola1.point.x + parabola2.point.x) / 2f
+                            val approximationY = (parabola1.point.y + parabola2.point.y) / 2f
+                            intersections += parabola1.intersection(parabola2, Point(approximationX, approximationY))
+                        }
+                    }
+                }
+            }
             return intersections
         }
 
         fun lengthFromPointToLine(line: Line, point: Point) =
             if (line.k != null)
-                abs(-line.k * point.x + point.y - line.b) /
-                        sqrt(line.k.pow(2) + 1)
+                abs(-line.k!! * point.x + point.y - line.b) /
+                        sqrt(line.k!!.pow(2) + 1)
             else
                 abs(point.x - line.b)
 
         fun centerOfPerpendicular(line: Line, point: Point): Point? {
-            val a: Float
-            val b: Float
-            when (line.k) {
-                null -> {
-                    a = 1f
-                    b = 0f
-                }
-                0f -> {
-                    a = 0f
-                    b = 1f
-                }
-                else -> {
-                    a = -line.k
-                    b = 1f
-                }
-            }
-            val newLine = if (a != 0f)
-                Line(b / a, point.y - b / a * point.x)
-            else
-                Line(null, point.x)
-            val intersection = getIntersection(line, newLine) ?: return null
-            return (point + intersection) / 2f//Point((point.x + intersection.x) / 2f, (point.y + intersection.y) / 2f)
+            val newLine = Line.getPerpendicular(line, point)
+            println(line)
+            println(newLine)
+            val intersection = line.intersection(newLine) ?: return null
+            return (point + intersection) / 2f
         }
 
         private fun areIntersected(pointA1: Point, pointA2: Point, pointB1: Point, pointB2: Point): Boolean {
             val lineA = Line.getLine(pointA1, pointA2)
             val lineB = Line.getLine(pointB1, pointB2)
-            val intersection = getIntersection(lineA, lineB) ?: return false
+            val intersection = lineA.intersection(lineB) ?: return false
             val maxAX = max(pointA1.x, pointA2.x)
             val minAX = min(pointA1.x, pointA2.x)
             val maxAY = max(pointA1.y, pointA2.y)
@@ -1598,19 +1660,30 @@ class Geometric {
             //заменить поворт на метод
             line.k ?: return null
             var result = point.copy()
-            val xPoint = Point(-line.b / line.k, 0f)
+            val xPoint = Point(-line.b / line.k!!, 0f)
             result -= xPoint
             var x = result.x
             var y = result.y
-            result.x = x * cos(-atan(line.k)) - y * sin(-atan(line.k))
-            result.y = x * sin(-atan(line.k)) + y * cos(-atan(line.k))
+            result.x = x * cos(-atan(line.k!!)) - y * sin(-atan(line.k!!))
+            result.y = x * sin(-atan(line.k!!)) + y * cos(-atan(line.k!!))
             result.y *= -1f
             x = result.x
             y = result.y
-            result.x = x * cos(atan(line.k)) - y * sin(atan(line.k))
-            result.y = x * sin(atan(line.k)) + y * cos(atan(line.k))
+            result.x = x * cos(atan(line.k!!)) - y * sin(atan(line.k!!))
+            result.y = x * sin(atan(line.k!!)) + y * cos(atan(line.k!!))
             result += xPoint
             return result
+        }
+
+        private fun isAngleReflex(point1: Point, point2: Point, point3: Point): Boolean {
+            val vectorA = point1 - point2
+            val vectorB = point3 - point2
+            val lineA = Line.getLine(Point(), vectorA)
+            vectorB.rotate(-atan(lineA.k ?: Float.POSITIVE_INFINITY))
+            if (vectorA.x < 0f)
+                vectorB.rotate(PI.toFloat())
+            vectorB.normalize()
+            return vectorB.y <= 0f
         }
 
         private fun <T> error(msg: String? = null, value: T? = null): T? {

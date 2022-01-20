@@ -12,7 +12,7 @@ open class Trapezoid
     private val upperEdge: List<Point>
     private val lowerEdge: List<Point>
     val isTraingle: Boolean
-    var isReal: MutableList<Boolean>
+    var isReal: CircledList<Boolean>
 
     init {
         when {
@@ -46,7 +46,7 @@ open class Trapezoid
             else -> isTraingle = false
         }
         if (isTraingle) {
-            isReal = mutableListOf(true, true, true)
+            isReal = circledListOf(mutableListOf(true, true, true))
             when {
                 point1.y == point2.y -> {
                     if (point1.y > point3.y) {
@@ -78,7 +78,7 @@ open class Trapezoid
             }
         }
         else {
-            isReal = mutableListOf(true, true, true, true)
+            isReal = circledListOf(mutableListOf(true, true, true, true))
             when (point1.y) {
                 point2.y -> {
                     if (point1.y > point3.y) {
@@ -111,12 +111,12 @@ open class Trapezoid
         }
     }
 
-    override fun getPoints(): CircledList<Point>? {
-        return if (isTraingle)
-            circledListOf(mutableListOf(point1, point2, point3))
-        else
-            circledListOf(mutableListOf(point1, point2, point3, point4))
-    }
+    override val points: CircledList<Point>?
+    get() = if (isTraingle)
+        circledListOf(mutableListOf(point1, point2, point3))
+    else
+        circledListOf(mutableListOf(point1, point2, point3, point4))
+
 
     override fun contains(checkPoint: Point): Int {
         return when(checkPoint) {
